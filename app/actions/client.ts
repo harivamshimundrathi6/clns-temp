@@ -3,7 +3,6 @@
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
-import { sendConsultationEmail } from "@/lib/mail";
 
 export async function fetchClientCases() {
     try {
@@ -198,19 +197,8 @@ export async function bookConsultation(advocateId: string, data: {
                 advocateId: advocateId,
             });
 
-        // Send confirmation emails
-        if (session.user.email) {
-            sendConsultationEmail(
-                session.user.email,
-                session.user.name || "Client",
-                advocate.name || "Advocate",
-                {
-                    title: data.title,
-                    description: data.description,
-                    type: data.type || "Consultation"
-                }
-            ).catch((err) => console.error("Async email error:", err));
-        }
+        // Send confirmation emails using Firebase or other method if needed
+        // Removed nodemailer usage as requested
 
         revalidatePath("/dashboard/client");
         revalidatePath("/dashboard/client/cases");

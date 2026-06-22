@@ -85,14 +85,14 @@ export const userOperations = {
     return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as User;
   },
 
-  async create(data: User): Promise<User> {
+  async create(data: Omit<User, 'id'> & { id?: string }): Promise<User> {
     // If firebaseUid is provided, use it as the document ID to pass security rules
     if (data.firebaseUid) {
-        await setDoc(doc(db, "users", data.firebaseUid), data);
-        return { id: data.firebaseUid, ...data };
+        await setDoc(doc(db, "users", data.firebaseUid), data as any);
+        return { id: data.firebaseUid, ...data } as User;
     }
-    const docRef = await addDoc(collection(db, "users"), data);
-    return { id: docRef.id, ...data };
+    const docRef = await addDoc(collection(db, "users"), data as any);
+    return { id: docRef.id, ...data } as User;
   },
 
   async update(id: string, data: Partial<User>): Promise<User> {
@@ -711,7 +711,7 @@ export const systemLogOperations = {
       ...data,
       createdAt: new Date().toISOString()
     });
-    return { id: docRef.id, ...data };
+    return { id: docRef.id, ...data } as SystemLog;
   }
 };
 
