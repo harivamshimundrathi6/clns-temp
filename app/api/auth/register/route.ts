@@ -52,13 +52,8 @@ export async function POST(req: Request) {
             console.error("Failed to write system log:", e);
         }
 
-        // Send email verification
-        const baseUrl = process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-        const actionCodeSettings = {
-            url: `${baseUrl}/verify-callback`,
-            handleCodeInApp: true,
-        };
-        await sendEmailVerification(firebaseUser, actionCodeSettings);
+        // Send email verification without custom redirect URL (removes "Continue" option)
+        await sendEmailVerification(firebaseUser);
 
         // Firebase Client SDK automatically logs the user in on creation. 
         // We will sign them out immediately so they have to verify their email and log in manually.
