@@ -21,8 +21,9 @@ export async function POST(request: Request) {
         }
 
         // Send the verification email
+        const baseUrl = process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
         const actionCodeSettings = {
-            url: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-callback`,
+            url: `${baseUrl}/verify-callback`,
             handleCodeInApp: true,
         };
         await sendEmailVerification(firebaseUser, actionCodeSettings);
