@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Mail, Settings, User, Briefcase, Users } from "lucide-react";
+import { Home, Mail, Settings, User, Briefcase, Users, Scale } from "lucide-react";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { name: "About", url: "/about", icon: User },
   { name: "Services", url: "/services", icon: Settings },
   { name: "Affiliation", url: "/affiliation", icon: Users },
+  { name: "Advocates", url: "/advocates", icon: Scale },
   { name: "Careers", url: "/careers", icon: Briefcase },
   { name: "Contact", url: "/contact", icon: Mail },
 ];
