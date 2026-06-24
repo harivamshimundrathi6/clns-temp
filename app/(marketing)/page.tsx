@@ -119,9 +119,9 @@ export default function Home() {
         </div>
       </motion.section>
 
-      <InTheNewsSection />
-
       <LeadershipVideosSection />
+
+      <InTheNewsSection />
 
       <TestimonialsSection
         title="What our users say"

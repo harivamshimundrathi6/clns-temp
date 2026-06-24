@@ -11,7 +11,7 @@ async function test() {
   
     const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({requestType: 'VERIFY_EMAIL', idToken: idToken, returnOobLink: true})
+        body: JSON.stringify({requestType: 'VERIFY_EMAIL', idToken: idToken})
     });
     const data = await res.json();
     console.log('OOB Data:', data);
