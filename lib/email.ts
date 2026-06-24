@@ -78,7 +78,7 @@ export async function sendEmail({
 export async function sendVerificationRequestEmail(advocateName: string, advocateEmail: string, barId: string, requestId: string) {
     const adminEmail = "get.clns@gmail.com";
     const appUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const subject = `🔔 New Advocate Verification Request: ${advocateName}`;
+    const subject = `New Advocate Verification Request: ${advocateName}`;
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
             <h2 style="color: #2563eb; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">New Advocate Signup</h2>
@@ -106,11 +106,11 @@ export async function sendVerificationRequestEmail(advocateName: string, advocat
             <div style="margin: 20px 0; text-align: center;">
                 <a href="${appUrl}/api/admin/advocate-approval/email?requestId=${requestId}&action=APPROVE" 
                    style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin-right: 15px; border: 1px solid #059669; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);">
-                    ✅ Approve
+                    Approve
                 </a>
                 <a href="${appUrl}/api/admin/advocate-approval/email?requestId=${requestId}&action=REJECT" 
                    style="background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; border: 1px solid #dc2626; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.1);">
-                    ❌ Decline
+                    Decline
                 </a>
             </div>
 
@@ -138,10 +138,10 @@ export async function sendVerificationRequestEmail(advocateName: string, advocat
  * Send approval email to the advocate.
  */
 export async function sendApprovalEmail(advocateName: string, advocateEmail: string, reviewNote?: string) {
-    const subject = "✅ Your CLNS Advocate Account Has Been Approved!";
+    const subject = "Your CLNS Advocate Account Has Been Approved!";
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
-            <h2 style="color: #10b981; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Welcome to CLNS, ${advocateName}! 🎉</h2>
+            <h2 style="color: #10b981; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Welcome to CLNS, ${advocateName}!</h2>
             <p>Great news! Your advocate account has been <strong>approved</strong> by our admin team.</p>
             <p>You can now log in to your dashboard and start connecting with clients, managing cases, and publishing internship postings.</p>
             
@@ -176,7 +176,7 @@ export async function sendApprovalEmail(advocateName: string, advocateEmail: str
  * Send rejection email to the advocate.
  */
 export async function sendRejectionEmail(advocateName: string, advocateEmail: string, reviewNote?: string) {
-    const subject = "❌ CLNS Advocate Application Update";
+    const subject = "CLNS Advocate Application Update";
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
             <h2 style="color: #ef4444; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Advocate Application Status</h2>
@@ -289,7 +289,7 @@ export async function sendConsultationBookingEmailToAdvocate(advocateEmail: stri
 
 export async function sendConsultationBookingEmailToAdmin(clientName: string, advocateName: string, bookingDetails: any) {
     const adminEmail = "get.clns@gmail.com";
-    const subject = `🔔 New Consultation Booked: ${clientName} & ${advocateName}`;
+    const subject = `New Consultation Booked: ${clientName} & ${advocateName}`;
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
             <h2 style="color: #8b5cf6; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Platform Activity: New Consultation</h2>
