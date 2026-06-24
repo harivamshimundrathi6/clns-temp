@@ -333,7 +333,7 @@ export default function AdvocatesPage() {
   }, [searchQuery, selectedCity]);
 
   const totalCount = useCountUp(200);
-  const cityCount = useCountUp(20);
+  const cityCount = useCountUp(70);
 
   return (
     <main className="relative min-h-screen bg-[#020712] text-white">

@@ -172,11 +172,20 @@ export default function ServicesPage() {
     servicesCMS.getAll().then(data => setDynamicServices(data));
   }, []);
 
-  const clientServices = dynamicServices.filter(s => s.category === "Clients");
-  const studentServices = dynamicServices.filter(s => s.category === "Students");
-  const advocateServices = dynamicServices.filter(s => s.category === "Advocates");
-  const startupServices = dynamicServices.filter(s => s.category === "Startups");
-  const msmeServices = dynamicServices.filter(s => s.category === "MSME");
+  const uniqueServices = (services: ServiceItem[]) => {
+    const seen = new Set();
+    return services.filter(s => {
+      if (seen.has(s.title)) return false;
+      seen.add(s.title);
+      return true;
+    });
+  };
+
+  const clientServices = uniqueServices(dynamicServices.filter(s => s.category === "Clients"));
+  const studentServices = uniqueServices(dynamicServices.filter(s => s.category === "Students"));
+  const advocateServices = uniqueServices(dynamicServices.filter(s => s.category === "Advocates"));
+  const startupServices = uniqueServices(dynamicServices.filter(s => s.category === "Startups"));
+  const msmeServices = uniqueServices(dynamicServices.filter(s => s.category === "MSME"));
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
@@ -262,7 +271,7 @@ export default function ServicesPage() {
       <ServiceCategoriesSection />
 
       {/* 3. CLIENT SERVICES BLOCK */}
-      <section id="clients" className="relative overflow-hidden px-6 py-32">
+      <section id="clients" className="relative overflow-hidden px-6 py-32 scroll-mt-32">
         <div className="absolute inset-0 bg-gradient-to-br from-[#041424] via-[#020916] to-[#010207]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,204,0.15),transparent_65%)]" />
 
@@ -305,7 +314,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 4. STUDENT SERVICES BLOCK */}
-      <section id="students" className="relative overflow-hidden px-6 py-32">
+      <section id="students" className="relative overflow-hidden px-6 py-32 scroll-mt-32">
         <div className="absolute inset-0 bg-gradient-to-br from-[#041424] via-[#020916] to-[#010207]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,197,204,0.15),transparent_65%)]" />
 
@@ -348,7 +357,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 5. ADVOCATE SERVICES BLOCK */}
-      <section id="advocates" className="relative overflow-hidden px-6 py-32">
+      <section id="advocates" className="relative overflow-hidden px-6 py-32 scroll-mt-32">
         <div className="absolute inset-0 bg-gradient-to-br from-[#041424] via-[#020916] to-[#010207]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(34,197,204,0.15),transparent_65%)]" />
 
@@ -393,7 +402,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 6. STARTUP SERVICES BLOCK */}
-      <section id="startups" className="relative overflow-hidden px-6 py-32">
+      <section id="startups" className="relative overflow-hidden px-6 py-32 scroll-mt-32">
         <div className="absolute inset-0 bg-gradient-to-br from-[#041424] via-[#020916] to-[#010207]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,85,247,0.15),transparent_65%)]" />
 
@@ -436,7 +445,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 7. MSME SERVICES BLOCK */}
-      <section id="msme" className="relative overflow-hidden px-6 py-32">
+      <section id="msme" className="relative overflow-hidden px-6 py-32 scroll-mt-32">
         <div className="absolute inset-0 bg-gradient-to-br from-[#041424] via-[#020916] to-[#010207]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(249,115,22,0.15),transparent_65%)]" />
 

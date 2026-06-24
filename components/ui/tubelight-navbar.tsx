@@ -64,7 +64,7 @@ export const NavBar = memo(function NavBar({ items, className, showAuthButtons =
         className
       )}
     >
-      <div ref={containerRef} className="relative mx-auto flex w-full max-w-4xl items-center gap-2 sm:gap-3 rounded-2xl border border-white/60 px-2 sm:px-4 py-2 sm:py-2.5 shadow-[0_15px_40px_rgba(15,23,42,0.08)] backdrop-blur-[12px] transition-colors dark:border-white/10 dark:shadow-[0_20px_45px_rgba(2,6,23,0.65)]" style={{ clipPath: "inset(0 round 1rem)" }}>
+      <div ref={containerRef} className="relative mx-auto flex w-full max-w-4xl items-center gap-2 sm:gap-3 rounded-2xl border border-white/60 bg-white/90 dark:bg-[#050b16]/90 px-2 sm:px-4 py-2 sm:py-2.5 shadow-[0_15px_40px_rgba(15,23,42,0.08)] backdrop-blur-[12px] transition-colors dark:border-white/10 dark:shadow-[0_20px_45px_rgba(2,6,23,0.65)]" style={{ clipPath: "inset(0 round 1rem)" }}>
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <Image
             src="/clns-logo.png"

@@ -153,7 +153,7 @@ export async function sendApprovalEmail(advocateName: string, advocateEmail: str
             <div style="margin: 30px 0; text-align: center;">
                 <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/login" 
                    style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                    Log In to Dashboard →
+                    Log In to Dashboard
                 </a>
             </div>
 
@@ -271,7 +271,7 @@ export async function sendConsultationBookingEmailToAdvocate(advocateEmail: stri
             <div style="margin: 30px 0; text-align: center;">
                 <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/dashboard/advocate" 
                    style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                    View in Dashboard →
+                    View in Dashboard
                 </a>
             </div>
 
