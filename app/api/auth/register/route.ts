@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         // For advocates, create a verification request for admin review
         if (role === "ADVOCATE") {
             try {
-                await db.verificationRequest.create({
+                const verificationRequest = await db.verificationRequest.create({
                     userId: user.id,
                     status: "PENDING",
                     barId: barId?.trim() || "",
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
 
                 // Send email notification to admin get.clns@gmail.com
                 try {
-                    await sendVerificationRequestEmail(name, email, barId || "");
+                    await sendVerificationRequestEmail(name, email, barId || "", verificationRequest.id);
                 } catch (emailError) {
                     console.error("Failed to send verification request notification email:", emailError);
                 }

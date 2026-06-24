@@ -26,8 +26,17 @@ export async function POST() {
         // Get the Bar Council ID from the user document
         const barId = (user as any).barId || "";
 
+        // Get the verification request
+        const requests = await db.verificationRequest.findMany({
+            where: { userId: user.id }
+        });
+        const pendingRequest = requests.find(r => r.status === "PENDING");
+        if (!pendingRequest) {
+            return NextResponse.json({ error: "No pending verification request found" }, { status: 404 });
+        }
+
         // Trigger the admin email notification
-        await sendVerificationRequestEmail(user.name || "Advocate", user.email, barId);
+        await sendVerificationRequestEmail(user.name || "Advocate", user.email, barId, pendingRequest.id);
 
         // Add a system log
         await db.systemLog.create({

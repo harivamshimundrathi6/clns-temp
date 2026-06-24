@@ -75,8 +75,9 @@ export async function sendEmail({
 /**
  * Notify the admin (get.clns@gmail.com) that a new advocate has registered and needs verification.
  */
-export async function sendVerificationRequestEmail(advocateName: string, advocateEmail: string, barId: string) {
+export async function sendVerificationRequestEmail(advocateName: string, advocateEmail: string, barId: string, requestId: string) {
     const adminEmail = "get.clns@gmail.com";
+    const appUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const subject = `🔔 New Advocate Verification Request: ${advocateName}`;
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
@@ -100,14 +101,24 @@ export async function sendVerificationRequestEmail(advocateName: string, advocat
                 </table>
             </div>
 
-            <p>Please log in to the Developer/Super-Admin Dashboard to approve or reject this application.</p>
+            <p style="font-weight: bold; color: #0f172a; margin-top: 25px; text-align: center;">Verify directly from this email:</p>
             
-            <div style="margin: 30px 0; text-align: center;">
-                <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/login" 
-                   style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                    Open Developer Dashboard →
+            <div style="margin: 20px 0; text-align: center;">
+                <a href="${appUrl}/api/admin/advocate-approval/email?requestId=${requestId}&action=APPROVE" 
+                   style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin-right: 15px; border: 1px solid #059669; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);">
+                    ✅ Approve
+                </a>
+                <a href="${appUrl}/api/admin/advocate-approval/email?requestId=${requestId}&action=REJECT" 
+                   style="background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; border: 1px solid #dc2626; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.1);">
+                    ❌ Decline
                 </a>
             </div>
+
+            <p style="text-align: center; margin-top: 20px;">
+                <a href="${appUrl}/login" style="color: #2563eb; text-decoration: underline; font-size: 14px;">
+                    Open Developer Dashboard
+                </a>
+            </p>
             
             <p style="color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 25px;">
                 This is an automated system notification from the CLNS Platform.
@@ -119,7 +130,7 @@ export async function sendVerificationRequestEmail(advocateName: string, advocat
         to: adminEmail,
         subject,
         html,
-        text: `New Advocate Signup:\nName: ${advocateName}\nEmail: ${advocateEmail}\nBar Council ID: ${barId}\n\nPlease verify in the Developer Dashboard.`
+        text: `New Advocate Signup:\nName: ${advocateName}\nEmail: ${advocateEmail}\nBar Council ID: ${barId}\n\nApprove: ${appUrl}/api/admin/advocate-approval/email?requestId=${requestId}&action=APPROVE\nDecline: ${appUrl}/api/admin/advocate-approval/email?requestId=${requestId}&action=REJECT`
     });
 }
 
