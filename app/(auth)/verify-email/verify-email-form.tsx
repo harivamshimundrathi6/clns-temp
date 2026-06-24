@@ -68,11 +68,30 @@ export function VerifyEmailForm({ email }: { email: string }) {
             if (res.ok) {
                 if (data.verified) {
                     setVerificationStatus("verified");
-                    setMessage("Email verified successfully! Redirecting to login...");
-                    // Redirect to login after a short delay so user sees the success message
-                    setTimeout(() => {
-                        router.push("/login");
-                    }, 1500);
+                    setMessage("Email verified successfully! Logging you in...");
+                    // Auto-login and redirect to dashboard
+                    try {
+                        const { signIn } = await import("next-auth/react");
+                        const signInRes = await signIn("credentials", {
+                            email,
+                            password: checkPassword,
+                            redirect: false,
+                        });
+                        if (signInRes?.ok) {
+                            setTimeout(() => {
+                                window.location.href = "/dashboard";
+                            }, 1000);
+                        } else {
+                            // Fallback: redirect to login if auto-login fails
+                            setTimeout(() => {
+                                window.location.href = "/login";
+                            }, 1500);
+                        }
+                    } catch {
+                        setTimeout(() => {
+                            window.location.href = "/login";
+                        }, 1500);
+                    }
                 } else {
                     setVerificationStatus("not-verified");
                     setError("Email not verified yet. Please check your inbox and click the verification link.");

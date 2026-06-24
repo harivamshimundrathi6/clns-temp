@@ -40,24 +40,39 @@ export default auth(async (req) => {
             return NextResponse.redirect(new URL("/login", nextUrl));
         }
 
+        // Block advocates who are pending verification or rejected
+        const userStatus = (req.auth?.user as any)?.status?.toUpperCase();
+        if (userStatus === "PENDING_VERIFICATION" || userStatus === "REJECTED") {
+            // Allow developer access regardless of status
+            const userEmail = (req.auth?.user as any)?.email;
+            const developerEmail = process.env.DEVELOPER_EMAIL;
+            if (userEmail !== developerEmail) {
+                return NextResponse.redirect(new URL("/pending-approval", nextUrl));
+            }
+        }
+
         // Role-based access control
         const userEmail = (req.auth?.user as any)?.email;
         const developerEmail = process.env.DEVELOPER_EMAIL; // Set this in .env
 
+        // Redirect /dashboard/admin requests to /dashboard/developer
+        if (nextUrl.pathname.startsWith("/dashboard/admin")) {
+            if (userRole === "admin" || userEmail === developerEmail) {
+                return NextResponse.redirect(new URL("/dashboard/developer", nextUrl));
+            }
+            return NextResponse.redirect(new URL(`/dashboard/${userRole}`, nextUrl));
+        }
+
         if (nextUrl.pathname.startsWith("/dashboard/developer")) {
             console.log("Middleware Dev Check:", { userEmail, developerEmail, auth: req.auth });
-            if (userEmail !== developerEmail) {
-                // If not the exact developer email, redirect to signup
+            if (userRole !== "admin" && userEmail !== developerEmail) {
+                // If not admin role and not the exact developer email, redirect to signup
                 return NextResponse.redirect(new URL("/signup", nextUrl));
             }
             // Developer is allowed to access developer routes
-            // Return early so we don't hit the other role checks (developer might not have a formal 'role')
             return; 
         }
 
-        if (nextUrl.pathname.startsWith("/dashboard/admin") && userRole !== "admin") {
-            return NextResponse.redirect(new URL(`/dashboard/${userRole}`, nextUrl));
-        }
         if (nextUrl.pathname.startsWith("/dashboard/advocate") && userRole !== "advocate") {
             return NextResponse.redirect(new URL(`/dashboard/${userRole}`, nextUrl));
         }

@@ -20,6 +20,8 @@ export async function getUserProfile() {
             barId: true,
             resumeUrl: true,
             imageUrl: true,
+            city: true,
+            court: true,
         }
     });
 
@@ -34,6 +36,8 @@ export async function updateUserProfile(data: {
     college?: string;
     barId?: string;
     resumeUrl?: string;
+    city?: string;
+    court?: string;
 }) {
     try {
         const session = await auth();
@@ -50,6 +54,8 @@ export async function updateUserProfile(data: {
                 college: data.college,
                 barId: data.barId,
                 resumeUrl: data.resumeUrl,
+                city: data.city,
+                court: data.court,
             }).filter(([_, v]) => v !== undefined)
         );
 

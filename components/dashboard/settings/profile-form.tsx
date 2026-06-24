@@ -26,14 +26,16 @@ export function ProfileForm({ role }: ProfileFormProps) {
         email: "",
         bio: "",
         college: "",
-        barId: ""
+        barId: "",
+        city: "",
+        court: ""
     });
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [resumeUrl, setResumeUrl] = useState<string | null>(null);
     const [resumeFileName, setResumeFileName] = useState<string | null>(null);
     const [uploadingResume, setUploadingResume] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
-
+ 
     useEffect(() => {
         async function loadProfile() {
             try {
@@ -46,7 +48,9 @@ export function ProfileForm({ role }: ProfileFormProps) {
                         email: user.email,
                         bio: user.bio || "",
                         college: user.college || "",
-                        barId: user.barId || ""
+                        barId: user.barId || "",
+                        city: (user as any).city || "",
+                        court: (user as any).court || ""
                     });
                     // Set avatar URL - use uploaded image or fallback to dicebear
                     if (user.imageUrl) {
@@ -383,16 +387,40 @@ export function ProfileForm({ role }: ProfileFormProps) {
             )}
 
             {role === "advocate" && (
-                <div className="grid gap-2">
-                    <Label htmlFor="barId" className="text-slate-300">Bar Council ID</Label>
-                    <Input
-                        id="barId"
-                        value={formData.barId}
-                        onChange={(e) => setFormData({ ...formData, barId: e.target.value })}
-                        placeholder="MAH/1234/2020"
-                        className="bg-white/5 border-white/10 text-white"
-                    />
-                </div>
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="barId" className="text-slate-300">Bar Council ID</Label>
+                        <Input
+                            id="barId"
+                            value={formData.barId}
+                            onChange={(e) => setFormData({ ...formData, barId: e.target.value })}
+                            placeholder="MAH/1234/2020"
+                            className="bg-white/5 border-white/10 text-white"
+                        />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label htmlFor="city" className="text-slate-300">City</Label>
+                            <Input
+                                id="city"
+                                value={formData.city}
+                                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                placeholder="e.g. Hyderabad"
+                                className="bg-white/5 border-white/10 text-white"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="court" className="text-slate-300">Primary Court</Label>
+                            <Input
+                                id="court"
+                                value={formData.court}
+                                onChange={(e) => setFormData({ ...formData, court: e.target.value })}
+                                placeholder="e.g. High Court of Telangana"
+                                className="bg-white/5 border-white/10 text-white"
+                            />
+                        </div>
+                    </div>
+                </>
             )}
 
             <div className="flex justify-end pt-4">

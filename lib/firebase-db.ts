@@ -198,7 +198,7 @@ export const caseOperations = {
     return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Case;
   },
 
-  async findFirst(options: { where?: any }): Promise<Case | null> {
+  async findFirst(options: { where?: any; include?: any }): Promise<Case | null> {
     let q: Query<DocumentData> = collection(db, "cases");
     if (options?.where) {
       Object.entries(options.where).forEach(([key, value]) => {
@@ -209,7 +209,29 @@ export const caseOperations = {
     }
     const snapshot = await getDocs(q);
     if (snapshot.empty) return null;
-    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Case;
+    const caseItem = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Case;
+
+    if (options.include?.client && caseItem.clientId) {
+      const clientDoc = await getDoc(doc(db, "users", caseItem.clientId));
+      if (clientDoc.exists()) {
+        (caseItem as any).client = { id: clientDoc.id, ...clientDoc.data() };
+      }
+    }
+
+    if (options.include?.advocate && caseItem.advocateId) {
+      const advocateDoc = await getDoc(doc(db, "users", caseItem.advocateId));
+      if (advocateDoc.exists()) {
+        (caseItem as any).advocate = { id: advocateDoc.id, ...advocateDoc.data() };
+      }
+    }
+
+    if (options.include?.hearings) {
+      const hearingsQ = query(collection(db, "hearings"), where("caseId", "==", caseItem.id));
+      const hearingsSnapshot = await getDocs(hearingsQ);
+      (caseItem as any).hearings = hearingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    return caseItem;
   },
 
   async update(id: string, data: Partial<Case>): Promise<Case> {
@@ -379,6 +401,30 @@ export const verificationRequestOperations = {
       updatedAt: new Date().toISOString()
     });
     return { id, ...data } as VerificationRequest;
+  },
+
+  async create(data: Omit<VerificationRequest, 'id'>): Promise<VerificationRequest> {
+    const docRef = await addDoc(collection(db, "verificationRequests"), {
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    return { id: docRef.id, ...data } as VerificationRequest;
+  },
+
+  async findUnique(options: { where: any }): Promise<VerificationRequest | null> {
+    if (options.where.id) {
+      const docRef = doc(db, "verificationRequests", options.where.id);
+      const snapshot = await getDoc(docRef);
+      if (!snapshot.exists()) return null;
+      return { id: snapshot.id, ...snapshot.data() } as VerificationRequest;
+    }
+    const field = Object.keys(options.where)[0];
+    const value = options.where[field];
+    const q = query(collection(db, "verificationRequests"), where(field, "==", value));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as VerificationRequest;
   }
 };
 

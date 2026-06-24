@@ -34,7 +34,7 @@ export async function fetchClientCases() {
             }
         });
 
-        cases.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        cases.sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
 
         // Transform for UI consumption if needed, or return as is.
         // The UI needs: 
@@ -54,7 +54,7 @@ export async function fetchClientCases() {
             status: c.status,
             lawyer: c.advocate ? c.advocate.name : "Unassigned",
             lawyerEmail: c.advocate?.email,
-            nextHearing: c.hearings[0]?.date || null,
+            nextHearing: c.hearings?.[0]?.date || null,
             updatedAt: c.updatedAt
         }));
 
@@ -131,6 +131,7 @@ export async function fetchAvailableAdvocates() {
         const advocates = await db.user.findMany({
             where: {
                 role: "ADVOCATE",
+                status: "ACTIVE",
             },
             select: {
                 id: true,
@@ -141,11 +142,17 @@ export async function fetchAvailableAdvocates() {
                 imageUrl: true,
                 status: true,
                 createdAt: true,
+                city: true,
+                court: true,
             }
         });
 
         // Sort in memory instead of using Firebase index
-        advocates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        advocates.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+        });
 
         // Filter out specific advocates as requested
         const namesToRemove = ["hari vamshi", "varun", "clns legal"];
@@ -157,8 +164,11 @@ export async function fetchAvailableAdvocates() {
             email: adv.email,
             specialization: adv.barId ? "Verified Advocate" : "General Practice",
             bio: adv.bio || "Experienced legal professional ready to assist you.",
-            verified: adv.status === "VERIFIED" || !!adv.barId,
+            verified: true,
             imageUrl: adv.imageUrl || null,
+            city: (adv as any).city || "Hyderabad",
+            court: (adv as any).court || "High Court",
+            barId: adv.barId || undefined,
         }));
     } catch (error) {
         console.error("Failed to fetch advocates:", error);

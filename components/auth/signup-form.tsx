@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Loader2, Mail, Lock, User, Briefcase, GraduationCap, Chrome } from "lucide-react";
+import { Loader2, Mail, Lock, User, Briefcase, GraduationCap, Chrome, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,8 @@ export function SignupForm() {
             password: { value: string };
         };
 
+        const barIdInput = (event.target as any).barId;
+
         try {
             const res = await fetch("/api/auth/register", {
                 method: "POST",
@@ -45,6 +47,7 @@ export function SignupForm() {
                     email: target.email.value,
                     password: target.password.value,
                     role: selectedRole.toUpperCase(),
+                    ...(selectedRole === "advocate" && barIdInput ? { barId: barIdInput.value } : {}),
                 }),
                 headers: { "Content-Type": "application/json" },
             });
@@ -163,6 +166,24 @@ export function SignupForm() {
                             />
                         </div>
                     </div>
+                    {selectedRole === "advocate" && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="barId">Bar Council ID</Label>
+                            <div className="relative">
+                                <Scale className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                <Input
+                                    id="barId"
+                                    name="barId"
+                                    placeholder="e.g. TS/1234/2021 or AP/5678/2020"
+                                    type="text"
+                                    required
+                                    disabled={isLoading}
+                                    className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+                                />
+                            </div>
+                            <p className="text-xs text-slate-500">Your Bar Council enrollment number. This will be verified by our team.</p>
+                        </div>
+                    )}
                     {error && <div className="text-red-500 text-sm">{error}</div>}
                     <Button disabled={isLoading} className="bg-blue-600 hover:bg-blue-500 text-white mt-2">
                         {isLoading && (

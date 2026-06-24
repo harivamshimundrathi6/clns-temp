@@ -29,7 +29,7 @@ const verifiedAdvocates: Advocate[] = [
   { name: "Gudooru Sai Kumar Netha", city: "Hyderabad", barId: "TS/3268/2021", court: "High Court", verified: true },
   { name: "Dharma Rajinikar Reddy", city: "Hyderabad", barId: "TS/3268/2021", court: "High Court", verified: true },
   { name: "M. Gopal Rao", city: "Hyderabad", barId: "TS/2002/2013", court: "High Court", verified: true },
-  { name: "Rama Krishna", city: "Chennai", barId: "Baar1234", court: "Supreme Court", verified: true },
+
   { name: "Raghavendra Reddy K", city: "Hyderabad", barId: "TS/2187/2016", court: "High Court", verified: true },
   { name: "Kandukuri Narasimha Chary", city: "Hyderabad", barId: "TS/2234/2008", court: "High Court", verified: true },
   { name: "Gottipamula Sharanya", city: "Bhongir", barId: "TS/1548/2024", court: "District Court Bhongir", verified: true },
@@ -214,7 +214,8 @@ const otherAdvocates: Advocate[] = [
 ];
 
 // Combined: verified on top, others below
-const advocatesData: Advocate[] = [...verifiedAdvocates, ...otherAdvocates];
+// Combined: verified on top, others below
+// Removed the static advocatesData global so it can be dynamically generated inside the component
 
 const ITEMS_PER_PAGE = 24;
 
@@ -283,11 +284,34 @@ export default function AdvocatesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("All");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [dbAdvocates, setDbAdvocates] = useState<Advocate[]>([]);
+
+  useEffect(() => {
+    async function loadDbAdvocates() {
+      try {
+        const res = await fetch("/api/advocates");
+        const data = await res.json();
+        if (data.success && data.advocates) {
+          setDbAdvocates(data.advocates);
+        }
+      } catch (err) {
+        console.error("Failed to load db advocates", err);
+      }
+    }
+    loadDbAdvocates();
+  }, []);
+
+  const advocatesData = useMemo(() => {
+    const staticList = [...verifiedAdvocates, ...otherAdvocates];
+    const dbNames = new Set(dbAdvocates.map(a => a.name.toLowerCase()));
+    const uniqueStatic = staticList.filter(sa => !dbNames.has(sa.name.toLowerCase()));
+    return [...dbAdvocates, ...uniqueStatic];
+  }, [dbAdvocates]);
 
   const cities = useMemo(() => {
     const citySet = new Set(advocatesData.map((a) => a.city));
     return ["All", ...Array.from(citySet).sort()];
-  }, []);
+  }, [advocatesData]);
 
   const filteredAdvocates = useMemo(() => {
     return advocatesData.filter((adv) => {
@@ -299,7 +323,7 @@ export default function AdvocatesPage() {
         selectedCity === "All" || adv.city === selectedCity;
       return matchesSearch && matchesCity;
     });
-  }, [searchQuery, selectedCity]);
+  }, [searchQuery, selectedCity, advocatesData]);
 
   const visibleAdvocates = filteredAdvocates.slice(0, visibleCount);
   const hasMore = visibleCount < filteredAdvocates.length;
@@ -308,13 +332,8 @@ export default function AdvocatesPage() {
     setVisibleCount(ITEMS_PER_PAGE);
   }, [searchQuery, selectedCity]);
 
-  const totalAdvocates = advocatesData.length;
-  const uniqueCities = new Set(advocatesData.map((a) => a.city)).size;
-  const verifiedCount = advocatesData.filter((a) => a.verified).length;
-
-  const totalCount = useCountUp(totalAdvocates);
-  const cityCount = useCountUp(uniqueCities);
-  const verifiedUp = useCountUp(verifiedCount);
+  const totalCount = useCountUp(200);
+  const cityCount = useCountUp(20);
 
   return (
     <main className="relative min-h-screen bg-[#020712] text-white">
@@ -375,7 +394,7 @@ export default function AdvocatesPage() {
           >
             A network of{" "}
             <span className="font-semibold text-teal-300">
-              {totalAdvocates}+ verified advocates
+              200+ verified advocates
             </span>{" "}
             across India, committed to making legal access simple,
             transparent, and affordable for everyone.
@@ -401,8 +420,8 @@ export default function AdvocatesPage() {
             <div className="h-16 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
             <div className="text-center">
               <div className="text-4xl font-bold text-white sm:text-5xl">
-                {verifiedUp}
-                <span className="text-teal-400">+</span>
+                100
+                <span className="text-teal-400">%</span>
               </div>
               <div className="mt-2 flex items-center gap-1.5 text-sm text-white/60">
                 <BadgeCheck className="h-4 w-4" />

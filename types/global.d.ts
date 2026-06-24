@@ -15,6 +15,8 @@ declare global {
     resumeUrl?: string | null;
     imageUrl?: string | null;
     firebaseUid?: string | null;
+    city?: string | null;
+    court?: string | null;
   }
 
   interface Case {
@@ -52,6 +54,11 @@ declare global {
     userId: string;
     status: string;
     documentUrl?: string;
+    barId?: string;
+    advocateName?: string;
+    advocateEmail?: string;
+    reviewedBy?: string;
+    reviewNote?: string;
     createdAt?: string;
     updatedAt?: string;
     user?: User;

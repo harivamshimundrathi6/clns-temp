@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookingDialog } from "./booking-dialog";
+import { allStaticAdvocates } from "@/lib/advocates-data";
 
 interface Advocate {
     id: string;
@@ -18,6 +19,9 @@ interface Advocate {
     bio: string;
     verified: boolean;
     imageUrl?: string | null;
+    city?: string;
+    barId?: string;
+    court?: string;
 }
 
 interface FindLawyerContentProps {
@@ -32,8 +36,31 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
     const [revealedContacts, setRevealedContacts] = useState<Record<string, boolean>>({});
     const router = useRouter();
 
+    // Merge database advocates with static advocates from the public page
+    const allAdvocates = useMemo(() => {
+        const dbNames = new Set(initialAdvocates.map(a => a.name.toLowerCase()));
+        
+        // Add static advocates that aren't already in the database
+        const staticEntries: Advocate[] = allStaticAdvocates
+            .filter(sa => !dbNames.has(sa.name.toLowerCase()))
+            .map((sa, i) => ({
+                id: `static-${i}`,
+                name: sa.name,
+                email: "",
+                specialization: sa.barId ? "Verified Advocate" : "General Practice",
+                bio: sa.court ? `Practicing at ${sa.court}` : "Experienced legal professional ready to assist you.",
+                verified: !!sa.verified,
+                imageUrl: null,
+                city: sa.city,
+                barId: sa.barId,
+                court: sa.court,
+            }));
+
+        return [...initialAdvocates, ...staticEntries];
+    }, [initialAdvocates]);
+
     const filteredAdvocates = useMemo(() => {
-        let filtered = initialAdvocates;
+        let filtered = allAdvocates;
 
         // Filter by search term
         if (searchTerm.trim()) {
@@ -41,7 +68,9 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
             filtered = filtered.filter(adv =>
                 adv.name.toLowerCase().includes(term) ||
                 adv.specialization.toLowerCase().includes(term) ||
-                adv.bio.toLowerCase().includes(term)
+                adv.bio.toLowerCase().includes(term) ||
+                (adv.city?.toLowerCase().includes(term) ?? false) ||
+                (adv.barId?.toLowerCase().includes(term) ?? false)
             );
         }
 
@@ -53,7 +82,7 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
         }
 
         return filtered;
-    }, [initialAdvocates, searchTerm, selectedFilter]);
+    }, [allAdvocates, searchTerm, selectedFilter]);
 
     const handleBookNow = (advocateId: string, advocateName: string) => {
         setSelectedAdvocate({ id: advocateId, name: advocateName });
@@ -132,7 +161,7 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
                             className="group flex flex-col sm:flex-row gap-5 rounded-xl border border-white/10 bg-white/5 p-5 hover:border-emerald-500/30 hover:bg-white/10 transition-all"
                         >
                             <Avatar className="h-24 w-24 shrink-0 border border-white/10">
-                                <AvatarImage src={advocate.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${advocate.email}`} />
+                                <AvatarImage src={advocate.imageUrl || (advocate.email ? `https://api.dicebear.com/7.x/initials/svg?seed=${advocate.email}` : undefined)} />
                                 <AvatarFallback className={`${getColorClass(i)} text-white text-xl font-bold`}>
                                     {getInitials(advocate.name)}
                                 </AvatarFallback>
@@ -150,9 +179,18 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
                                         <p className="text-sm text-slate-400 flex items-center gap-1">
                                             <Scale className="h-3.5 w-3.5" />
                                             {advocate.specialization}
+                                            {advocate.city && (
+                                                <span className="ml-2 text-slate-500">• {advocate.city}</span>
+                                            )}
                                         </p>
                                     </div>
                                 </div>
+
+                                {advocate.barId && (
+                                    <p className="text-xs text-cyan-400/80 font-mono">
+                                        Bar ID: {advocate.barId}
+                                    </p>
+                                )}
 
                                 <p className="text-xs text-slate-300 line-clamp-2">
                                     {advocate.bio}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, Code, Activity, ShieldAlert, Briefcase, Wrench, PhoneCall } from "lucide-react";
+import { Users, Code, Activity, ShieldAlert, Briefcase, Wrench, PhoneCall, Shield } from "lucide-react";
 
 export default function DeveloperDashboard() {
   return (
@@ -10,6 +10,18 @@ export default function DeveloperDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-xl border-2 border-amber-200 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-amber-100 to-transparent rounded-bl-3xl" />
+          <div className="relative">
+            <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-semibold mb-1">Advocate Approvals</h3>
+            <p className="text-gray-500 text-sm mb-4">Review and approve pending advocate registrations.</p>
+            <Link href="/dashboard/developer/advocates" className="text-amber-600 font-medium hover:underline">Review Requests &rarr;</Link>
+          </div>
+        </div>
+
         <div className="bg-white p-6 rounded-xl border shadow-sm">
           <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4">
             <Users className="w-6 h-6" />

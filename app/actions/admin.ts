@@ -54,7 +54,7 @@ export async function updateUserStatus(userId: string, status: "ACTIVE" | "SUSPE
         const user = await db.user.update(userId, { status: status as any });
 
         await logSystemEvent("USER_UPDATE", `User ${user.email} status updated to ${status}`, "ADMIN_ACTION");
-        revalidatePath("/dashboard/admin");
+        revalidatePath("/dashboard/developer");
         revalidatePath("/dashboard/client"); // Ensure clients see status changes if relevant
         return { success: true };
     } catch (error) {
@@ -81,7 +81,7 @@ export async function approveVerification(requestId: string) {
             } as any),
         ]);
 
-        revalidatePath("/dashboard/admin");
+        revalidatePath("/dashboard/developer");
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to approve verification" };
@@ -107,7 +107,7 @@ export async function rejectVerification(requestId: string) {
             } as any),
         ]);
 
-        revalidatePath("/dashboard/admin");
+        revalidatePath("/dashboard/developer");
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to reject verification" };
@@ -134,7 +134,7 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
             userId: session.user.id,
         });
 
-        revalidatePath("/dashboard/admin");
+        revalidatePath("/dashboard/developer");
         return { success: true };
     } catch (error) {
         console.error("Failed to update user role:", error);
@@ -159,7 +159,7 @@ export async function updateProfile(data: { name: string; email: string }) {
             // email: data.email
         });
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/developer/settings");
         revalidatePath("/dashboard");
         return { success: true };
     } catch (error: any) {
@@ -219,7 +219,7 @@ export async function createUser(data: { name: string; email: string; role: User
             userId: session.user.id,
         });
 
-        revalidatePath("/dashboard/admin");
+        revalidatePath("/dashboard/developer");
         return { success: true };
     } catch (error) {
         console.error("Failed to create user:", error);
