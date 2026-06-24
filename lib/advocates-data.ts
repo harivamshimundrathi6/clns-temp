@@ -111,7 +111,6 @@ export const verifiedAdvocates: StaticAdvocate[] = [
   { name: "Kondronpally Giri Babu", city: "Hyderabad", barId: "9993", court: "Ranga Reddy District Court", verified: true },
   { name: "Sujata Karmakar", city: "Secunderabad", barId: "TS 785/1993", court: "All Courts in Telangana", verified: true },
   { name: "KVM Krishnamacharyulu", city: "Eluru", barId: "1263/2003", court: "District Court", verified: true },
-  { name: "Anjaneya Prasad", city: "Guntur", barId: "AP/1542/2027", court: "Guntur District Courts", verified: true },
   { name: "Jagadeesh Talikota", city: "Nandyal", barId: "AP/746/2016", court: "Nandyal, Kurnool, Allagadda Courts", verified: true },
   { name: "Yeduru Rajesh Reddy", city: "Vijayawada", barId: "AP/1922/2024", court: "AP High Court & District Courts", verified: true },
   { name: "Nabi Sab", city: "Adoni", barId: "KAR(P)/586/2024", court: "Siruguppa", verified: true },

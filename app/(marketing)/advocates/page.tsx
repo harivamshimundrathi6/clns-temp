@@ -130,7 +130,6 @@ const verifiedAdvocates: Advocate[] = [
   { name: "Kondronpally Giri Babu", city: "Hyderabad", barId: "9993", court: "Ranga Reddy District Court", verified: true },
   { name: "Sujata Karmakar", city: "Secunderabad", barId: "TS 785/1993", court: "All Courts in Telangana", verified: true },
   { name: "KVM Krishnamacharyulu", city: "Eluru", barId: "1263/2003", court: "District Court", verified: true },
-  { name: "Anjaneya Prasad", city: "Guntur", barId: "AP/1542/2027", court: "Guntur District Courts", verified: true },
   { name: "Jagadeesh Talikota", city: "Nandyal", barId: "AP/746/2016", court: "Nandyal, Kurnool, Allagadda Courts", verified: true },
   { name: "Yeduru Rajesh Reddy", city: "Vijayawada", barId: "AP/1922/2024", court: "AP High Court & District Courts", verified: true },
   { name: "Nabi Sab", city: "Adoni", barId: "KAR(P)/586/2024", court: "Siruguppa", verified: true },
@@ -280,6 +279,27 @@ function getAvatarColor(name: string) {
   return colors[Math.abs(hash) % colors.length];
 }
 
+function getEnrollmentYear(barId?: string): number {
+  if (!barId) return 9999;
+  
+  // Look for all 4-digit years (19xx or 20xx)
+  const matches = barId.match(/(19|20)\d{2}(?!\d)/g);
+  if (matches) {
+    // If multiple, the year of enrollment is usually the last one (e.g. AP/1922/2024 -> 2024)
+    return parseInt(matches[matches.length - 1], 10);
+  }
+  
+  // Look for 2-digit year at the end (e.g. /98, /23)
+  const match2 = barId.match(/\/(\d{2})$/);
+  if (match2) {
+    const y = parseInt(match2[1], 10);
+    return y < 50 ? 2000 + y : 1900 + y;
+  }
+  
+  // If no year found, put them at the end
+  return 9999;
+}
+
 export default function AdvocatesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("All");
@@ -302,10 +322,43 @@ export default function AdvocatesPage() {
   }, []);
 
   const advocatesData = useMemo(() => {
-    const staticList = [...verifiedAdvocates, ...otherAdvocates];
+    // Get DB names to filter out duplicates from static lists
     const dbNames = new Set(dbAdvocates.map(a => a.name.toLowerCase()));
-    const uniqueStatic = staticList.filter(sa => !dbNames.has(sa.name.toLowerCase()));
-    return [...dbAdvocates, ...uniqueStatic];
+
+    const staticList = [...verifiedAdvocates, ...otherAdvocates].filter(
+      (a) => a.name !== "T Ramachandra" && !dbNames.has(a.name.toLowerCase())
+    );
+
+    const combinedOriginal = [...dbAdvocates, ...staticList];
+
+    // Sort a copy by experience to find the top most experienced
+    const sortedByExperience = [...combinedOriginal].sort((a, b) => {
+      const yearA = getEnrollmentYear(a.barId);
+      const yearB = getEnrollmentYear(b.barId);
+      
+      if (yearA !== yearB) {
+        return yearA - yearB;
+      }
+      if (a.verified !== b.verified) {
+        return a.verified ? -1 : 1;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    // Take the first page's worth of advocates (24)
+    const top24 = sortedByExperience.slice(0, ITEMS_PER_PAGE);
+    const top24Names = new Set(top24.map(a => a.name));
+
+    // The rest of the advocates
+    const rest = combinedOriginal.filter(a => !top24Names.has(a.name));
+
+    // Deterministic pseudo-random shuffle for the rest to avoid hydration errors but appear random
+    rest.sort((a, b) => {
+      const hash = (str: string) => str.split('').reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0);
+      return hash(a.name) - hash(b.name);
+    });
+
+    return [...top24, ...rest];
   }, [dbAdvocates]);
 
   const cities = useMemo(() => {
