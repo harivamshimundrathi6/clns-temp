@@ -212,6 +212,16 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         console.error("Failed to fetch user in jwt callback", e);
                     }
                 }
+            } else if (token.role === "ADVOCATE" && token.status === "PENDING_VERIFICATION" && token.email) {
+                // If they are pending advocate, fetch latest status from database on subsequent requests to handle approval changes
+                try {
+                    const dbUser = await db.user.findUnique({ where: { email: token.email } });
+                    if (dbUser && dbUser.status) {
+                        token.status = dbUser.status;
+                    }
+                } catch (e) {
+                    console.error("Failed to update pending advocate status in jwt callback", e);
+                }
             }
             return token;
         },

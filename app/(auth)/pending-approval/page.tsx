@@ -17,11 +17,33 @@ export default function PendingApprovalPage() {
     useEffect(() => {
         if (status === "unauthenticated") {
             router.push("/login");
+            return;
         }
         // If user is already approved, redirect to dashboard
         if (session?.user && (session.user as any).status === "ACTIVE") {
             router.push("/dashboard");
+            return;
         }
+
+        // Poll every 5 seconds to check approval status automatically in the background
+        const interval = setInterval(async () => {
+            try {
+                const res = await fetch("/api/auth/check-approval-status");
+                const data = await res.json();
+                if (data.status === "ACTIVE") {
+                    setStatusMessage("You got verified! Redirecting to your dashboard...");
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        // Force session refresh by reloading
+                        window.location.href = "/dashboard";
+                    }, 1500);
+                }
+            } catch (e) {
+                console.error("Error polling approval status:", e);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
     }, [session, status, router]);
 
     const handleCheckStatus = async () => {
@@ -31,7 +53,7 @@ export default function PendingApprovalPage() {
             const res = await fetch("/api/auth/check-approval-status");
             const data = await res.json();
             if (data.status === "ACTIVE") {
-                setStatusMessage("Your account has been approved! Redirecting...");
+                setStatusMessage("You got verified! Redirecting to your dashboard...");
                 setTimeout(() => {
                     // Force session refresh by reloading
                     window.location.href = "/dashboard";
