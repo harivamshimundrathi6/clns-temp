@@ -202,3 +202,130 @@ export async function sendRejectionEmail(advocateName: string, advocateEmail: st
         text: `Dear ${advocateName}, unfortunately, we were unable to verify your advocate credentials at this time. ${reviewNote ? `Reason: ${reviewNote}` : ""} Please contact support at get.clns@gmail.com if you have any questions.`
     });
 }
+
+export async function sendConsultationBookingEmailToClient(clientEmail: string, clientName: string, advocateName: string, bookingDetails: any) {
+    const subject = `Your Consultation with ${advocateName} is Confirmed`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #2563eb; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Booking Confirmed!</h2>
+            <p>Dear ${clientName},</p>
+            <p>Your consultation request with <strong>${advocateName}</strong> has been successfully booked.</p>
+            
+            <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569; width: 140px;">Title:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${bookingDetails.title}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569;">Description:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${bookingDetails.description}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569;">Type:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${bookingDetails.type || "Consultation"}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <p style="color: #64748b; font-size: 13px;">The advocate will review your request and get back to you shortly.</p>
+            <p style="color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 25px;">
+                If you have any questions, feel free to contact us at <a href="mailto:get.clns@gmail.com">get.clns@gmail.com</a>.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: clientEmail,
+        subject,
+        html,
+        text: `Dear ${clientName}, your consultation request with ${advocateName} has been successfully booked. Title: ${bookingDetails.title}`
+    });
+}
+
+export async function sendConsultationBookingEmailToAdvocate(advocateEmail: string, advocateName: string, clientName: string, bookingDetails: any) {
+    const subject = `New Consultation Request from ${clientName}`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #10b981; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">New Consultation Request!</h2>
+            <p>Dear ${advocateName},</p>
+            <p>You have received a new consultation request from <strong>${clientName}</strong>.</p>
+            
+            <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569; width: 140px;">Title:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${bookingDetails.title}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569;">Description:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${bookingDetails.description}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569;">Type:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${bookingDetails.type || "Consultation"}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="margin: 30px 0; text-align: center;">
+                <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/dashboard/advocate" 
+                   style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                    View in Dashboard →
+                </a>
+            </div>
+
+            <p style="color: #64748b; font-size: 13px;">Please log in to your dashboard to review and manage this request.</p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: advocateEmail,
+        subject,
+        html,
+        text: `Dear ${advocateName}, you have a new consultation request from ${clientName}. Please log in to your dashboard to review.`
+    });
+}
+
+export async function sendConsultationBookingEmailToAdmin(clientName: string, advocateName: string, bookingDetails: any) {
+    const adminEmail = "get.clns@gmail.com";
+    const subject = `🔔 New Consultation Booked: ${clientName} & ${advocateName}`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #8b5cf6; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Platform Activity: New Consultation</h2>
+            <p>A new consultation has been booked on the platform.</p>
+            
+            <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569; width: 140px;">Client:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${clientName}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569;">Advocate:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${advocateName}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569;">Title:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${bookingDetails.title}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #475569;">Type:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${bookingDetails.type || "Consultation"}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <p style="color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 25px;">
+                This is an automated system notification from the CLNS Platform.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: adminEmail,
+        subject,
+        html,
+        text: `New consultation booked on CLNS between ${clientName} and ${advocateName}.`
+    });
+}

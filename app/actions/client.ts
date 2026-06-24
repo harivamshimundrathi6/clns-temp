@@ -3,6 +3,11 @@
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
+import { 
+    sendConsultationBookingEmailToClient, 
+    sendConsultationBookingEmailToAdvocate, 
+    sendConsultationBookingEmailToAdmin 
+} from "@/lib/email";
 
 export async function fetchClientCases() {
     try {
@@ -190,7 +195,7 @@ export async function bookConsultation(advocateId: string, data: {
         // Check if advocate exists and is active
         const advocate = await db.user.findUnique({
             where: { id: advocateId },
-            select: { id: true, role: true, status: true, name: true }
+            select: { id: true, role: true, status: true, name: true, email: true }
         });
 
         if (!advocate || advocate.role !== "ADVOCATE") {
@@ -207,8 +212,28 @@ export async function bookConsultation(advocateId: string, data: {
                 advocateId: advocateId,
             });
 
-        // Send confirmation emails using Firebase or other method if needed
-        // Removed nodemailer usage as requested
+        // Fetch client details
+        const client = await db.user.findUnique({
+            where: { id: session.user.id },
+            select: { name: true, email: true }
+        });
+
+        if (client && client.email && advocate.email) {
+            const clientName = client.name || "Client";
+            const advName = advocate.name || "Advocate";
+            const bookingDetails = {
+                title: data.title,
+                description: data.description,
+                type: data.type || "Consultation"
+            };
+
+            // Send confirmation emails asynchronously
+            Promise.allSettled([
+                sendConsultationBookingEmailToClient(client.email, clientName, advName, bookingDetails),
+                sendConsultationBookingEmailToAdvocate(advocate.email, advName, clientName, bookingDetails),
+                sendConsultationBookingEmailToAdmin(clientName, advName, bookingDetails)
+            ]).catch(e => console.error("Error sending booking emails:", e));
+        }
 
         revalidatePath("/dashboard/client");
         revalidatePath("/dashboard/client/cases");
