@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, MessageSquare, Scale, BadgeCheck } from "lucide-react";
+import { Search, Filter, Scale, BadgeCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -33,7 +33,6 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
     const [searchTerm, setSearchTerm] = useState("");
     const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
     const [selectedAdvocate, setSelectedAdvocate] = useState<{ id: string; name: string } | null>(null);
-    const [revealedContacts, setRevealedContacts] = useState<Record<string, boolean>>({});
     const router = useRouter();
 
     // Merge database advocates with static advocates from the public page
@@ -210,20 +209,7 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
                                 >
                                     WhatsApp
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setRevealedContacts(prev => ({ ...prev, [advocate.id]: !prev[advocate.id] }))}
-                                    className="w-full border-white/10 hover:bg-white/10 text-slate-300 hover:text-white text-xs h-9"
-                                >
-                                    {revealedContacts[advocate.id] ? (
-                                        "8465958825"
-                                    ) : (
-                                        <>
-                                            <MessageSquare className="h-3.5 w-3.5 mr-2" />
-                                            Contact
-                                        </>
-                                    )}
-                                </Button>
+
                             </div>
                         </motion.div>
                     ))}

@@ -17,6 +17,7 @@ export async function GET() {
         return NextResponse.json({
             status: user.status,
             role: user.role,
+            barId: user.barId,
         });
     } catch (error) {
         console.error("Check approval status error:", error);

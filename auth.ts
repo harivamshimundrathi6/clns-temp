@@ -170,11 +170,13 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             console.error("Could not read cookie", e);
                         }
 
+                        const initialStatus = selectedRole === "ADVOCATE" ? "PENDING_VERIFICATION" : "ACTIVE";
+
                         const newUser = await db.user.create({
                             email: user.email,
                             name: user.name || (profile as any)?.name || "User",
                             role: selectedRole,
-                            status: "ACTIVE",
+                            status: initialStatus,
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         });

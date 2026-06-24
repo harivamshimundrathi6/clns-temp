@@ -664,7 +664,7 @@ export default function AdvocatesPage() {
           viewport={{ once: true }}
           variants={fadeInUp}
           transition={{ duration: 0.25 }}
-          className="relative z-10 mx-auto flex max-w-4xl flex-col items-center rounded-[40px] border border-white/10 bg-black/30 p-12 sm:p-16 text-center shadow-[0_50px_150px_rgba(0,0,0,0.6)] backdrop-blur-xl"
+          className="relative z-10 mx-auto flex max-w-4xl flex-col items-center rounded-[40px] border border-teal-500/50 bg-gradient-to-b from-teal-900/30 to-black/50 p-12 sm:p-16 text-center shadow-[0_0_80px_rgba(20,184,166,0.25)] backdrop-blur-xl ring-1 ring-teal-400/20"
         >
           <Scale className="mb-6 h-12 w-12 text-teal-400" />
           <h2 className="text-3xl font-bold leading-tight text-transparent sm:text-4xl bg-gradient-to-r from-teal-300 via-sky-400 to-blue-400 bg-clip-text">
@@ -679,7 +679,7 @@ export default function AdvocatesPage() {
             href="/contact"
             className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-cyan-500 px-8 py-4 text-sm font-semibold text-white shadow-[0_10px_40px_rgba(34,211,238,0.3)] transition-all hover:shadow-[0_15px_50px_rgba(34,211,238,0.5)] hover:scale-105"
           >
-            Get in Touch
+            Register as a CLNS Advocate
           </a>
         </motion.div>
       </section>
