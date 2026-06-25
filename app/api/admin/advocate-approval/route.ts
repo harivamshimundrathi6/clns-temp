@@ -11,7 +11,7 @@ export async function POST(req: Request) {
         }
 
         const developerEmail = process.env.DEVELOPER_EMAIL;
-        if (session.user.email !== developerEmail) {
+        if (session.user.email !== developerEmail && session.user.role !== "ADMIN" && session.user.role !== "DEVELOPER") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
@@ -102,7 +102,7 @@ export async function GET(req: Request) {
         }
 
         const developerEmail = process.env.DEVELOPER_EMAIL;
-        if (session.user.email !== developerEmail) {
+        if (session.user.email !== developerEmail && session.user.role !== "ADMIN" && session.user.role !== "DEVELOPER") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 

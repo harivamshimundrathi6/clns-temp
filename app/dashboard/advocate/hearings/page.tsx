@@ -18,6 +18,19 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+function parseHearingDate(dateVal: any): Date {
+    if (!dateVal) return new Date();
+    // Check if it's a Firebase Timestamp object
+    if (typeof dateVal === 'object' && dateVal !== null) {
+        if ('seconds' in dateVal) return new Date(dateVal.seconds * 1000);
+        if ('_seconds' in dateVal) return new Date(dateVal._seconds * 1000);
+    }
+    // Fallback to standard Date parsing
+    const parsed = new Date(dateVal);
+    // If invalid, return current date to avoid crash
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
 export default function AdvocateHearingsPage() {
     const [hearings, setHearings] = useState<any[]>([]);
     const [cases, setCases] = useState<any[]>([]);
@@ -102,8 +115,8 @@ export default function AdvocateHearingsPage() {
                     {hearings.map((hearing) => (
                         <div key={hearing.id} className="flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
                             <div className="flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-black/20 border border-white/10">
-                                <span className="text-xs text-slate-500 uppercase">{format(hearing.date, "MMM")}</span>
-                                <span className="text-xl font-bold text-white">{format(hearing.date, "dd")}</span>
+                                <span className="text-xs text-slate-500 uppercase">{format(parseHearingDate(hearing.date), "MMM")}</span>
+                                <span className="text-xl font-bold text-white">{format(parseHearingDate(hearing.date), "dd")}</span>
                             </div>
 
                             <div className="flex-1 space-y-1">
@@ -115,7 +128,7 @@ export default function AdvocateHearingsPage() {
                                 <div className="flex flex-col gap-2 text-sm text-slate-400 md:items-end">
                                     <div className="flex items-center gap-2">
                                         <Clock className="h-4 w-4 text-emerald-500" />
-                                        {format(hearing.date, "h:mm a")}
+                                        {format(parseHearingDate(hearing.date), "h:mm a")}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <MapPin className="h-4 w-4 text-blue-500" />
@@ -123,7 +136,7 @@ export default function AdvocateHearingsPage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <User className="h-4 w-4 text-purple-500" />
-                                        {hearing.case.client.name}
+                                        {hearing.case?.client?.name || "Unknown Client"}
                                     </div>
                                 </div>
 

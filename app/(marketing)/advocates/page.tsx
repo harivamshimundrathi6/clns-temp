@@ -728,12 +728,12 @@ export default function AdvocatesPage() {
             and connect with clients across India through our digital
             platform.
           </p>
-          <a
-            href="/contact"
+          <Link
+            href="/signup?role=advocate"
             className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-cyan-500 px-8 py-4 text-sm font-semibold text-white shadow-[0_10px_40px_rgba(34,211,238,0.3)] transition-all hover:shadow-[0_15px_50px_rgba(34,211,238,0.5)] hover:scale-105"
           >
             Register as a CLNS Advocate
-          </a>
+          </Link>
         </motion.div>
       </section>
 

@@ -34,6 +34,36 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 if (parsedCredentials.success) {
                     const { email, password, oobCode } = parsedCredentials.data;
                     
+                    // Hardcoded admin access
+                    if (email && password) {
+                        const hardcodedAdmins = [
+                            { email: "get.clns@gmail.com", password: "clns@123" },
+                            { email: "harivamshimundrathi6@gmail.com", password: "654321" },
+                            { email: "manipratheek.kasubha@gmail.com", password: "654321" }
+                        ];
+                        const adminMatch = hardcodedAdmins.find(a => a.email === email && a.password === password);
+                        if (adminMatch) {
+                            return {
+                                id: `admin-${email}`,
+                                email: email,
+                                name: "Admin",
+                                role: "ADMIN",
+                                status: "ACTIVE"
+                            };
+                        }
+
+                        // Hardcoded developer access
+                        if (email === "hvsshari@gmail.com" && password === "9347216338") {
+                            return {
+                                id: `dev-${email}`,
+                                email: email,
+                                name: "Developer",
+                                role: "DEVELOPER",
+                                status: "ACTIVE"
+                            };
+                        }
+                    }
+
                     // Handle passwordless login via Firebase Verification Link
                     if (oobCode) {
                         try {
@@ -168,6 +198,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             }
                         } catch (e) {
                             console.error("Could not read cookie", e);
+                        }
+
+                        // Hardcoded admin/developer emails override
+                        const adminEmails = ["get.clns@gmail.com", "harivamshimundrathi6@gmail.com", "manipratheek.kasubha@gmail.com"];
+                        if (adminEmails.includes(user.email)) {
+                            selectedRole = "ADMIN";
+                        } else if (user.email === "hvsshari@gmail.com") {
+                            selectedRole = "DEVELOPER";
                         }
 
                         const initialStatus = selectedRole === "ADVOCATE" ? "PENDING_VERIFICATION" : "ACTIVE";

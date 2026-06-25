@@ -25,7 +25,7 @@ export function MessageCenter({ role, myId }: MessageCenterProps) {
     }, [role]);
 
     return (
-        <div className="flex flex-col md:flex-row h-[700px] gap-6">
+        <div className="flex flex-col md:flex-row h-[calc(100vh-220px)] min-h-[500px] gap-6">
             {/* Contacts Sidebar */}
             <div className="w-full md:w-80 flex flex-col bg-[#020817] border border-white/10 rounded-xl overflow-hidden">
                 <div className="p-4 border-b border-white/10 bg-white/5">

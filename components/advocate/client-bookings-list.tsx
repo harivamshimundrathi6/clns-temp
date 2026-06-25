@@ -85,8 +85,7 @@ export function ClientBookingsList({ cases }: ClientBookingsListProps) {
                         <div className="flex items-start gap-2 text-sm">
                             <User className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-white">{booking.client.name || "Unknown Client"}</p>
-                                <p className="text-slate-400 text-xs mt-0.5">{booking.client.email}</p>
+                                <p className="text-white">A Client</p>
                             </div>
                         </div>
 
@@ -139,10 +138,10 @@ export function ClientBookingsList({ cases }: ClientBookingsListProps) {
                         <div className="flex items-center gap-2 mt-auto pt-4">
                             <Button
                                 className="w-full bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center gap-2"
-                                onClick={() => window.location.href = `mailto:${booking.client.email}?subject=Regarding your consultation request: ${encodeURIComponent(booking.title)}`}
+                                onClick={() => window.location.href = `mailto:get.clns@gmail.com?subject=Client details request for consultation: ${encodeURIComponent(booking.title)}`}
                             >
                                 <Mail className="h-4 w-4" />
-                                Contact Client
+                                Contact CLNS Team
                             </Button>
                         </div>
                     )}

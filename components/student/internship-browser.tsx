@@ -36,7 +36,6 @@ export function InternshipBrowser({ internships, appliedIds }: InternshipBrowser
     // Dialog State
     const [selectedJob, setSelectedJob] = useState<InternshipPosting | null>(null);
     const [coverNote, setCoverNote] = useState("");
-    const [resumeFile, setResumeFile] = useState<File | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const filterTypes = ["All", "In-Office", "Remote", "Hybrid"];
@@ -52,7 +51,6 @@ export function InternshipBrowser({ internships, appliedIds }: InternshipBrowser
     const openApplyDialog = (job: InternshipPosting) => {
         setSelectedJob(job);
         setCoverNote("");
-        setResumeFile(null);
         setIsDialogOpen(true);
     };
 
@@ -60,16 +58,11 @@ export function InternshipBrowser({ internships, appliedIds }: InternshipBrowser
         if (!selectedJob) return;
 
         setApplying(selectedJob.id);
-        let resumeUrl = undefined;
         try {
-            if (resumeFile) {
-                const fileExtension = resumeFile.name.split('.').pop();
-                const storageRef = ref(storage, `resumes/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExtension}`);
-                const uploadResult = await uploadBytes(storageRef, resumeFile);
-                resumeUrl = await getDownloadURL(uploadResult.ref);
-            }
-
-            const result = await applyForInternship(selectedJob.id, coverNote, resumeUrl);
+            toast.info("Submitting application...", { id: "submit-toast" });
+            
+            // We pass undefined for the resumeUrl since we removed the upload feature
+            const result = await applyForInternship(selectedJob.id, coverNote, undefined);
             if (result.success) {
                 toast.success("Application submitted successfully!");
                 setLocalApplied(prev => new Set(prev).add(selectedJob.id));
@@ -78,8 +71,8 @@ export function InternshipBrowser({ internships, appliedIds }: InternshipBrowser
                 toast.error(result.error || "Failed to apply");
             }
         } catch (error) {
-            console.error("Upload/Apply Error:", error);
-            toast.error("An error occurred");
+            console.error("Apply Error:", error);
+            toast.error(error instanceof Error ? error.message : "An error occurred during submission", { id: "submit-toast" });
         } finally {
             setApplying(null);
         }
@@ -204,16 +197,6 @@ export function InternshipBrowser({ internships, appliedIds }: InternshipBrowser
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="resume" className="text-slate-300">Resume (PDF, JPG, PNG)</Label>
-                            <Input
-                                id="resume"
-                                type="file"
-                                accept=".pdf,.jpg,.jpeg,.png"
-                                onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
-                                className="bg-white/5 border-white/10 text-white cursor-pointer file:text-white file:bg-white/10 file:border-0 file:rounded-md file:px-2 file:py-1 hover:file:bg-white/20"
-                            />
-                        </div>
                         <div className="grid gap-2">
                             <Label htmlFor="coverNote" className="text-slate-300">Cover Note (Optional)</Label>
                             <Textarea

@@ -11,7 +11,7 @@ export default async function MyCasesPage() {
                     <h2 className="text-2xl font-bold tracking-tight text-white">My Cases</h2>
                     <p className="text-slate-400">Track the live status of your legal proceedings.</p>
                 </div>
-                {/* New Case button could be a link or modal trigger */}
+                {/* Removed Create Case button per request */}
             </div>
 
             <ClientCaseList initialCases={cases} />

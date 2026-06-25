@@ -53,7 +53,7 @@ export function DashboardContent({ metrics, postings, mentorships }: DashboardCo
         {
             name: "Applications Sent",
             value: metrics.applicationsSent.toString(),
-            change: "Pending Review",
+            change: "Total submitted",
             icon: FileText,
             color: "text-teal-400",
             bg: "bg-teal-500/10",
@@ -62,7 +62,7 @@ export function DashboardContent({ metrics, postings, mentorships }: DashboardCo
         {
             name: "Upcoming Sessions",
             value: metrics.upcomingSessions.toString(),
-            change: "On Schedule",
+            change: "Scheduled",
             icon: Calendar,
             color: "text-purple-400",
             bg: "bg-purple-500/10",
@@ -71,7 +71,7 @@ export function DashboardContent({ metrics, postings, mentorships }: DashboardCo
         {
             name: "Mentorship Hours",
             value: `${metrics.mentorshipHours}h`,
-            change: "Tracked",
+            change: "Logged so far",
             icon: Users,
             color: "text-sky-400",
             bg: "bg-sky-500/10",
@@ -112,8 +112,7 @@ export function DashboardContent({ metrics, postings, mentorships }: DashboardCo
                                 </div>
                             </div>
                             <div className="relative z-10 mt-4 flex items-center gap-2 text-sm">
-                                <span className="flex items-center gap-1 font-medium text-teal-400">
-                                    <ArrowUpRight className="h-4 w-4" />
+                                <span className="flex items-center gap-1 font-medium text-slate-400">
                                     {stat.change}
                                 </span>
                             </div>

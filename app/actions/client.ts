@@ -126,6 +126,30 @@ export async function fetchCaseDetails(caseId: string) {
     }
 }
 
+export async function createClientCase(data: { title: string, description: string, type: string }) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id || session.user.role !== "CLIENT") {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        const newCase = await db.case.create({
+            title: data.title,
+            description: data.description,
+            type: data.type,
+            status: "OPEN", // Unassigned cases can start as OPEN
+            clientId: session.user.id,
+            // no advocate assigned yet
+        });
+
+        revalidatePath("/dashboard/client/cases");
+        return { success: true, caseId: newCase.id };
+    } catch (error: any) {
+        console.error("Failed to create case:", error);
+        return { success: false, error: error.message || "Failed to create case" };
+    }
+}
+
 export async function fetchAvailableAdvocates() {
     try {
         const session = await auth();
@@ -136,7 +160,6 @@ export async function fetchAvailableAdvocates() {
         const advocates = await db.user.findMany({
             where: {
                 role: "ADVOCATE",
-                status: "ACTIVE",
             },
             select: {
                 id: true,
@@ -160,7 +183,7 @@ export async function fetchAvailableAdvocates() {
         });
 
         // Filter out specific advocates as requested
-        const namesToRemove = ["hari vamshi", "varun", "clns legal"];
+        const namesToRemove = ["hari vamshi", "pratheek kasuba"];
         const filteredAdvocates = advocates.filter(adv => !namesToRemove.includes((adv.name || "").toLowerCase()));
 
         return filteredAdvocates.map(adv => ({
@@ -169,7 +192,7 @@ export async function fetchAvailableAdvocates() {
             email: adv.email,
             specialization: adv.barId ? "Verified Advocate" : "General Practice",
             bio: adv.bio || "Experienced legal professional ready to assist you.",
-            verified: true,
+            verified: adv.status === "ACTIVE",
             imageUrl: adv.imageUrl || null,
             city: (adv as any).city || "Hyderabad",
             court: (adv as any).court || "High Court",
@@ -202,15 +225,16 @@ export async function bookConsultation(advocateId: string, data: {
             return { success: false, error: "Advocate not found" };
         }
 
-        // Create a new case for the consultation
+        // Create a new case for the consultation in the admin queue
         const newCase = await db.case.create({
                 title: data.title,
                 description: data.description,
                 type: data.type || "Consultation",
-                status: "PENDING", // Start as PENDING so advocate can review
+                status: "PENDING_ASSIGNMENT", // Admin must assign
                 clientId: session.user.id,
-                advocateId: advocateId,
-            });
+                advocateId: null, // Not officially assigned yet
+                preferredAdvocateId: advocateId, // Store who they want
+            } as any);
 
         // Fetch client details
         const client = await db.user.findUnique({

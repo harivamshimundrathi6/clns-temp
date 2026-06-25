@@ -26,8 +26,8 @@ export async function applyForInternship(postingId: string, coverNote?: string, 
             studentId: session.user.id,
             postingId: postingId,
             status: "PENDING",
-            coverNote: coverNote,
-            resumeUrl: resumeUrl,
+            coverNote: coverNote || null,
+            resumeUrl: resumeUrl || null,
         });
 
         revalidatePath("/dashboard/student");
@@ -64,9 +64,12 @@ export async function getStudentApplications() {
             where: { studentId: session.user.id },
             include: {
                 posting: true
-            },
-            orderBy: { createdAt: "desc" }
+            }
         });
+        
+        // Sort in memory to avoid Firebase missing composite index error
+        applications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        
         return applications;
     } catch (error) {
         console.error("Failed to fetch applications:", error);
@@ -79,7 +82,6 @@ export async function fetchMentors() {
         const mentors = await db.user.findMany({
             where: {
                 role: "ADVOCATE", // Only Advocates can be mentors
-                status: { in: ["ACTIVE", "VERIFIED"] } // Active or verified only
             },
             select: {
                 id: true,

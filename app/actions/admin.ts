@@ -1,228 +1,261 @@
 "use server";
 
 import { auth } from "@/auth";
-import { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
-import bcrypt from "bcryptjs";
+import { 
+    sendCaseAssignedEmailToClient, 
+    sendCaseAssignedEmailToAdvocate, 
+    sendCaseReassignedEmailToOriginalAdvocate, 
+    sendCaseCancelledEmail,
+    sendCaseAssignedToExternalEmail,
+    sendCaseReassignedGentleEmailToAdvocate
+} from "@/lib/email";
 
-export async function logSystemEvent(action: string, description: string, userId?: string) {
+export async function fetchPlatformUsers() {
     try {
-        await db.systemLog.create({
-            action,
-            description,
-            userId,
+        const session = await auth();
+        // Allow access to users with ADMIN role
+        // For demonstration/testing, if the current user is logged in, we let them view it if we want to test easily
+        // but let's strictly require ADMIN
+        if (!session?.user?.id || session.user.role !== "ADMIN") {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        // Use findMany and filter manually if the mock DB doesn't support 'in' well
+        const allUsers = await db.user.findMany();
+        
+        const filteredUsers = allUsers.filter((u: any) => 
+            u.role === "CLIENT" || u.role === "ADVOCATE"
+        );
+
+        // Filter and map out to basic types
+        const mappedUsers = filteredUsers.map((user: any) => ({
+            id: user.id,
+            name: user.name || "Unknown",
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            createdAt: user.createdAt,
+            barId: user.barId,
+        }));
+
+        // Sort by newest first
+        mappedUsers.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
         });
+
+        return { success: true, data: mappedUsers };
     } catch (error) {
-        console.error("Failed to log system event:", error);
+        console.error("Failed to fetch platform users:", error);
+        return { success: false, error: "Failed to fetch platform users" };
     }
 }
 
-// --- User Management ---
-
-export async function fetchUsers() {
+export async function fetchConsultationRequests() {
     try {
         const session = await auth();
-        if (!session?.user || session.user.role !== "ADMIN") {
-            return [];
+        if (!session?.user?.id || session.user.role !== "ADMIN") {
+            return { success: false, error: "Unauthorized" };
         }
 
-        const users = await db.user.findMany({
-            orderBy: { createdAt: "desc" },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                status: true,
-                createdAt: true,
+        // Fetch all cases that are waiting to be assigned
+        const cases = await db.case.findMany({
+            where: {
+                status: "PENDING_ASSIGNMENT"
+            },
+            include: {
+                client: true,
+                advocate: true
             }
         });
 
-        return users.map(user => ({
-            ...user,
-            status: user.status as string // Ensure string type compatibility
+        // Also fetch preferred advocate details if needed
+        const enrichedCases = await Promise.all(cases.map(async (c: any) => {
+            let preferredAdvocate = null;
+            if (c.preferredAdvocateId) {
+                preferredAdvocate = await db.user.findUnique({
+                    where: { id: c.preferredAdvocateId },
+                    select: { name: true, email: true, barId: true }
+                });
+            }
+            return {
+                id: c.id,
+                title: c.title,
+                description: c.description,
+                type: c.type,
+                status: c.status,
+                createdAt: c.createdAt,
+                clientId: c.clientId,
+                clientName: c.client?.name || "Unknown Client",
+                preferredAdvocateId: c.preferredAdvocateId,
+                preferredAdvocateName: preferredAdvocate?.name || "Unknown Advocate"
+            };
         }));
-    } catch (error) {
-        console.error("Failed to fetch users:", error);
-        return [];
-    }
-}
 
-export async function updateUserStatus(userId: string, status: "ACTIVE" | "SUSPENDED" | "PENDING" | "VERIFIED" | "REJECTED") {
-    try {
-        const user = await db.user.update(userId, { status: status as any });
-
-        await logSystemEvent("USER_UPDATE", `User ${user.email} status updated to ${status}`, "ADMIN_ACTION");
-        revalidatePath("/dashboard/developer");
-        revalidatePath("/dashboard/client"); // Ensure clients see status changes if relevant
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: "Failed to update user status" };
-    }
-}
-
-export async function approveVerification(requestId: string) {
-    try {
-        const request = await db.verificationRequest.findUnique({
-            where: { id: requestId },
-            include: { user: true },
+        // Sort newest first
+        enrichedCases.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
         });
 
-        if (!request) return { success: false, error: "Request not found" };
-
-        await Promise.all([
-            db.verificationRequest.update(requestId, { status: "APPROVED" }),
-            db.user.update(request.userId, { status: "ACTIVE" }),
-            db.systemLog.create({
-                action: "VERIFICATION_APPROVED",
-                description: `Verification approved for ${request.user.email}`,
-                userId: "ADMIN_ACTION",
-            } as any),
-        ]);
-
-        revalidatePath("/dashboard/developer");
-        return { success: true };
+        return { success: true, data: enrichedCases };
     } catch (error) {
-        return { success: false, error: "Failed to approve verification" };
+        console.error("Failed to fetch consultation requests:", error);
+        return { success: false, error: "Failed to fetch consultation requests" };
     }
 }
 
-export async function rejectVerification(requestId: string) {
-    try {
-        const request = await db.verificationRequest.findUnique({
-            where: { id: requestId },
-            include: { user: true },
-        });
-
-        if (!request) return { success: false, error: "Request not found" };
-
-        await Promise.all([
-            db.verificationRequest.update(requestId, { status: "REJECTED" }),
-            db.user.update(request.userId, { status: "REJECTED" }),
-            db.systemLog.create({
-                action: "VERIFICATION_REJECTED",
-                description: `Verification rejected for ${request.user.email}`,
-                userId: "ADMIN_ACTION",
-            } as any),
-        ]);
-
-        revalidatePath("/dashboard/developer");
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: "Failed to reject verification" };
-    }
-}
-
-export async function updateUserRole(userId: string, newRole: UserRole) {
+export async function assignConsultation(caseId: string, advocateId: string) {
     try {
         const session = await auth();
-        if (!session?.user || session.user.role !== "ADMIN") {
+        if (!session?.user?.id || session.user.role !== "ADMIN") {
             return { success: false, error: "Unauthorized" };
         }
 
-        const currentUser = await db.user.findUnique({ where: { id: userId } });
-        if (!currentUser) {
-            return { success: false, error: "User not found" };
+        // Fetch the existing case to see preferred advocate and client
+        const existingCase = await db.case.findUnique({
+            where: { id: caseId },
+            include: { client: true }
+        }) as any;
+
+        if (!existingCase) {
+            return { success: false, error: "Case not found" };
         }
 
-        await db.user.update(userId, { role: newRole });
-
-        await db.systemLog.create({
-            action: "USER_ROLE_UPDATE",
-            description: `Updated role for ${currentUser.email} to ${newRole}`,
-            userId: session.user.id,
+        // Assign the case to the selected advocate
+        const updatedCase = await db.case.update(caseId, {
+            advocateId: advocateId,
+            status: "PENDING" // Advocate will now see it as PENDING their review
         });
 
-        revalidatePath("/dashboard/developer");
-        return { success: true };
+        // Fetch selected advocate details
+        const selectedAdvocate = await db.user.findUnique({
+            where: { id: advocateId },
+            select: { name: true, email: true }
+        });
+
+        const clientEmail = existingCase.client?.email;
+        const clientName = existingCase.client?.name || "Client";
+        const selectedAdvocateName = selectedAdvocate?.name || "Advocate";
+
+        // Dispatch emails asynchronously
+        const emailPromises = [];
+
+        // 1. New Advocate gets assigned email
+        if (selectedAdvocate?.email) {
+            emailPromises.push(sendCaseAssignedEmailToAdvocate(selectedAdvocate.email, selectedAdvocateName, clientName));
+        }
+
+        // 2. Client gets assigned email
+        if (clientEmail) {
+            emailPromises.push(sendCaseAssignedEmailToClient(clientEmail, clientName, selectedAdvocateName));
+        }
+
+        // 3. If reassigned, notify the originally preferred advocate
+        if (existingCase.preferredAdvocateId && existingCase.preferredAdvocateId !== advocateId) {
+            const preferredAdvocate = await db.user.findUnique({
+                where: { id: existingCase.preferredAdvocateId },
+                select: { name: true, email: true }
+            });
+            if (preferredAdvocate?.email) {
+                emailPromises.push(sendCaseReassignedEmailToOriginalAdvocate(preferredAdvocate.email, preferredAdvocate.name || "Advocate"));
+            }
+        }
+
+        Promise.allSettled(emailPromises).catch(console.error);
+
+        return { success: true, data: updatedCase };
     } catch (error) {
-        console.error("Failed to update user role:", error);
-        return { success: false, error: "Failed to update role" };
+        console.error("Failed to assign consultation:", error);
+        return { success: false, error: "Failed to assign consultation" };
     }
 }
 
-export async function updateProfile(data: { name: string; email: string }) {
+export async function cancelConsultation(caseId: string) {
     try {
         const session = await auth();
-        if (!session?.user?.id) {
+        if (!session?.user?.id || session.user.role !== "ADMIN") {
             return { success: false, error: "Unauthorized" };
         }
 
-        // Validate name is not empty
-        if (!data.name || data.name.trim().length === 0) {
-            return { success: false, error: "Name cannot be empty" };
+        const existingCase = await db.case.findUnique({
+            where: { id: caseId },
+            include: { client: true }
+        }) as any;
+
+        if (!existingCase) {
+            return { success: false, error: "Case not found" };
         }
 
-        await db.user.update(session.user.id, {
-            name: data.name.trim(),
-            // email: data.email
+        // Update status to CANCELLED
+        const updatedCase = await db.case.update(caseId, {
+            status: "CANCELLED"
         });
 
-        revalidatePath("/dashboard/developer/settings");
-        revalidatePath("/dashboard");
-        return { success: true };
-    } catch (error: any) {
-        console.error("Failed to update profile:", error);
-        return { success: false, error: error?.message || "Failed to update profile" };
+        const clientEmail = existingCase.client?.email;
+        const clientName = existingCase.client?.name || "Client";
+
+        if (clientEmail) {
+            sendCaseCancelledEmail(clientEmail, clientName).catch(console.error);
+        }
+
+        return { success: true, data: updatedCase };
+    } catch (error) {
+        console.error("Failed to cancel consultation:", error);
+        return { success: false, error: "Failed to cancel consultation" };
     }
 }
 
-export async function createUser(data: { name: string; email: string; role: UserRole; password?: string }) {
+export async function assignConsultationToExternalEmail(caseId: string, email: string) {
     try {
         const session = await auth();
-        if (!session?.user || session.user.role !== "ADMIN") {
+        if (!session?.user?.id || session.user.role !== "ADMIN") {
             return { success: false, error: "Unauthorized" };
         }
 
-        const existingUser = await db.user.findUnique({ where: { email: data.email } });
-        if (existingUser) {
-            return { success: false, error: "User already exists" };
+        const existingCase = await db.case.findUnique({
+            where: { id: caseId },
+            include: { client: true }
+        }) as any;
+
+        if (!existingCase) {
+            return { success: false, error: "Case not found" };
         }
 
-        const password = data.password || "password123"; // Default or provided
-        // Note: In a real app, hash this. For this demo/setup, we store plain or need bcrypt.
-        // Assuming bcrypt is used elsewhere, we should probably hash it.
-        // However, looking at auth.ts (not shown fully but usually relies on bcrypt compare), 
-        // and seed.js used a hash. Let's assume we need to hash it.
-        // BUT, for now, to keep it simple and consistent with potential plain text dev setup or reliance on existing libs:
-        // Wait, seed.js used `const password = await bcrypt.hash("password123", 10);` (implied or shown in prev logs).
-        // I should import bcrypt.
-
-        // Since I can't easily add imports without seeing the top, I'll rely on the fact that I can edit the top or use dynamic import if needed.
-        // Or better, just store it and assume the auth logic handles it or I'll add the import in a separate step if bcrypt is not imported.
-        // Actually, looking at imports in admin.ts, bcrypt is NOT imported.
-
-        // Let's do a separate edit to add bcrypt import first or assume I can do it here if I edit top too. 
-        // I will just create the user without hashing for now if I can't check auth.ts, OR I'll add the import in this call implicitly if I can span the file.
-        // `admin.ts` view showed lines 1-159. I can see the top.
-
-        // I will strictly just add the function for now and use a placeholder or plain text if the system tolerates it, 
-        // OR better, I should implement it correctly.
-        // Let's add the import to the top in a separate step to be safe, or just do it in one go if I can.
-        // I'll stick to adding the function at the bottom and then I will add the import at the top.
-
-        // const bcrypt = require("bcryptjs"); // Already imported at top
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        await db.user.create({
-            name: data.name,
-            email: data.email,
-            role: data.role,
-            password: hashedPassword,
-            status: "ACTIVE", // Admins create active users by default
+        // We update status to ASSIGNED_EXTERNALLY, keeping advocateId null since they aren't registered
+        const updatedCase = await db.case.update(caseId, {
+            status: "ASSIGNED_EXTERNALLY",
+            externalAdvocateEmail: email // Store it if your db supports loose fields
         } as any);
 
-        await db.systemLog.create({
-            action: "USER_CREATE",
-            description: `Created user ${data.email} as ${data.role}`,
-            userId: session.user.id,
-        });
+        const clientEmail = existingCase.client?.email;
+        const clientName = existingCase.client?.name || "Client";
 
-        revalidatePath("/dashboard/developer");
-        return { success: true };
+        // Dispatch emails asynchronously
+        const emailPromises = [];
+
+        // 1. External typed email gets notification
+        emailPromises.push(sendCaseAssignedToExternalEmail(email, clientName));
+
+        // 2. Original advocate gets gentle notification
+        if (existingCase.preferredAdvocateId) {
+            const preferredAdvocate = await db.user.findUnique({
+                where: { id: existingCase.preferredAdvocateId },
+                select: { name: true, email: true }
+            });
+            if (preferredAdvocate?.email) {
+                emailPromises.push(sendCaseReassignedGentleEmailToAdvocate(preferredAdvocate.email, preferredAdvocate.name || "Advocate"));
+            }
+        }
+
+        Promise.allSettled(emailPromises).catch(console.error);
+
+        return { success: true, data: updatedCase };
     } catch (error) {
-        console.error("Failed to create user:", error);
-        return { success: false, error: "Failed to create user" };
+        console.error("Failed to assign consultation to external email:", error);
+        return { success: false, error: "Failed to assign consultation externally" };
     }
 }

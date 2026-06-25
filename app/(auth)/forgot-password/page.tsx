@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { auth, sendPasswordResetEmail } from "@/lib/firebase";
 
 export default function ForgotPasswordPage() {
     const [isLoading, setIsLoading] = React.useState(false);
@@ -23,14 +24,21 @@ export default function ForgotPasswordPage() {
         };
 
         try {
-            // TODO: Implement actual password reset email sending
-            // For now, show success message
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+            const email = target.email.value;
+            
+            // Send the actual password reset email via Firebase Auth
+            await sendPasswordResetEmail(auth, email);
             
             setEmailSent(true);
             toast.success("Password reset link sent to your email!");
-        } catch (err) {
-            toast.error("Failed to send reset email. Please try again.");
+        } catch (err: any) {
+            console.error("Forgot password error:", err);
+            // Firebase returns specific errors
+            if (err.code === "auth/user-not-found") {
+                toast.error("No account found with this email.");
+            } else {
+                toast.error("Failed to send reset email. Please try again.");
+            }
         } finally {
             setIsLoading(false);
         }

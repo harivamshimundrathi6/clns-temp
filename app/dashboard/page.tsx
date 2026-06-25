@@ -10,8 +10,12 @@ export default async function DashboardPage() {
 
     const role = (session.user as any).role?.toLowerCase();
     const developerEmail = process.env.DEVELOPER_EMAIL;
-    if (role === "admin" || (developerEmail && session.user.email === developerEmail)) {
+    if (developerEmail && session.user.email === developerEmail) {
         redirect("/dashboard/developer");
+    }
+    
+    if (role === "admin") {
+        redirect("/dashboard/admin");
     }
 
     const userStatus = (session.user as any).status?.toUpperCase();

@@ -55,18 +55,18 @@ export default auth(async (req) => {
         const userEmail = (req.auth?.user as any)?.email;
         const developerEmail = process.env.DEVELOPER_EMAIL; // Set this in .env
 
-        // Redirect /dashboard/admin requests to /dashboard/developer
         if (nextUrl.pathname.startsWith("/dashboard/admin")) {
-            if (userRole === "admin" || userEmail === developerEmail) {
-                return NextResponse.redirect(new URL("/dashboard/developer", nextUrl));
+            if (userRole !== "admin") {
+                return NextResponse.redirect(new URL(`/dashboard/${userRole}`, nextUrl));
             }
-            return NextResponse.redirect(new URL(`/dashboard/${userRole}`, nextUrl));
+            // Admin is allowed to access admin routes
+            return;
         }
 
         if (nextUrl.pathname.startsWith("/dashboard/developer")) {
             console.log("Middleware Dev Check:", { userEmail, developerEmail, auth: req.auth });
-            if (userRole !== "admin" && userEmail !== developerEmail) {
-                // If not admin role and not the exact developer email, redirect to signup
+            if (userRole !== "admin" && userRole !== "developer" && userEmail !== developerEmail) {
+                // If not admin/developer role and not the exact developer email, redirect to signup
                 return NextResponse.redirect(new URL("/signup", nextUrl));
             }
             // Developer is allowed to access developer routes

@@ -265,18 +265,6 @@ export function SignupForm() {
                     Sign in
                 </Link>
             </div>
-
-            <div className="text-center text-sm text-slate-500">
-                By creating an account, you agree to our{" "}
-                <Link href="/terms" className="underline underline-offset-4 hover:text-white">
-                    Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy" className="underline underline-offset-4 hover:text-white">
-                    Privacy Policy
-                </Link>
-                .
-            </div>
         </div>
     );
 }

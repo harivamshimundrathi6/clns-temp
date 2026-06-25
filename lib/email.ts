@@ -207,9 +207,9 @@ export async function sendConsultationBookingEmailToClient(clientEmail: string, 
     const subject = `Your Consultation with ${advocateName} is Confirmed`;
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
-            <h2 style="color: #2563eb; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Booking Confirmed!</h2>
+            <h2 style="color: #2563eb; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Booking Received</h2>
             <p>Dear ${clientName},</p>
-            <p>Your consultation request with <strong>${advocateName}</strong> has been successfully booked.</p>
+            <p>Your consultation request with <strong>${advocateName}</strong> has been received and is being processed.</p>
             
             <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -228,7 +228,7 @@ export async function sendConsultationBookingEmailToClient(clientEmail: string, 
                 </table>
             </div>
 
-            <p style="color: #64748b; font-size: 13px;">The advocate will review your request and get back to you shortly.</p>
+            <p style="color: #64748b; font-size: 13px; font-weight: bold; background: #e0f2fe; padding: 10px; border-radius: 6px;">We are currently reviewing your request and will notify you as soon as the advocate accepts your case.</p>
             <p style="color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 25px;">
                 If you have any questions, feel free to contact us at <a href="mailto:get.clns@gmail.com">get.clns@gmail.com</a>.
             </p>
@@ -239,17 +239,18 @@ export async function sendConsultationBookingEmailToClient(clientEmail: string, 
         to: clientEmail,
         subject,
         html,
-        text: `Dear ${clientName}, your consultation request with ${advocateName} has been successfully booked. Title: ${bookingDetails.title}`
+        text: `Dear ${clientName}, your consultation request with ${advocateName} has been received. We are currently reviewing your request. Title: ${bookingDetails.title}`
     });
 }
 
 export async function sendConsultationBookingEmailToAdvocate(advocateEmail: string, advocateName: string, clientName: string, bookingDetails: any) {
-    const subject = `New Consultation Request from ${clientName}`;
+    const subject = `New Consultation Request`;
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
             <h2 style="color: #10b981; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">New Consultation Request!</h2>
             <p>Dear ${advocateName},</p>
-            <p>You have received a new consultation request from <strong>${clientName}</strong>.</p>
+            <p>A client has sent a request for your consultation.</p>
+            <p style="color: #ef4444; font-weight: bold;">Please contact CLNS for this request.</p>
             
             <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -275,7 +276,7 @@ export async function sendConsultationBookingEmailToAdvocate(advocateEmail: stri
                 </a>
             </div>
 
-            <p style="color: #64748b; font-size: 13px;">Please log in to your dashboard to review and manage this request.</p>
+            <p style="color: #64748b; font-size: 13px;">Please coordinate with CLNS administration regarding this case assignment.</p>
         </div>
     `;
 
@@ -283,17 +284,17 @@ export async function sendConsultationBookingEmailToAdvocate(advocateEmail: stri
         to: advocateEmail,
         subject,
         html,
-        text: `Dear ${advocateName}, you have a new consultation request from ${clientName}. Please log in to your dashboard to review.`
+        text: `New Consultation Request! Dear ${advocateName}, A client has sent a request for your consultation. Please contact CLNS for this request. Title: ${bookingDetails.title}`
     });
 }
 
 export async function sendConsultationBookingEmailToAdmin(clientName: string, advocateName: string, bookingDetails: any) {
     const adminEmail = "get.clns@gmail.com";
-    const subject = `New Consultation Booked: ${clientName} & ${advocateName}`;
+    const subject = `New Consultation Request`;
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
             <h2 style="color: #8b5cf6; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Platform Activity: New Consultation</h2>
-            <p>A new consultation has been booked on the platform.</p>
+            <p>A new consultation request has been made on the platform.</p>
             
             <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -327,5 +328,137 @@ export async function sendConsultationBookingEmailToAdmin(clientName: string, ad
         subject,
         html,
         text: `New consultation booked on CLNS between ${clientName} and ${advocateName}.`
+    });
+}
+
+export async function sendCaseAssignedEmailToClient(clientEmail: string, clientName: string, advocateName: string) {
+    const subject = `Your Consultation is Assigned!`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #2563eb; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Consultation Assigned</h2>
+            <p>Dear ${clientName},</p>
+            <p>Great news! Your consultation request has been officially assigned to <strong>${advocateName}</strong>.</p>
+            <p>The advocate will review your details and be in touch with you shortly to proceed.</p>
+            <p style="color: #64748b; font-size: 13px; margin-top: 25px;">
+                If you have any questions, feel free to contact us at <a href="mailto:get.clns@gmail.com">get.clns@gmail.com</a>.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: clientEmail,
+        subject,
+        html,
+        text: `Dear ${clientName}, your consultation has been officially assigned to ${advocateName}.`
+    });
+}
+
+export async function sendCaseAssignedEmailToAdvocate(advocateEmail: string, advocateName: string, clientName: string) {
+    const subject = `New Case Assigned to You`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #10b981; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">New Case Assigned</h2>
+            <p>Dear ${advocateName},</p>
+            <p>CLNS has officially assigned a new consultation case to you from <strong>a client</strong>.</p>
+            <p>You can now log into your Advocate Dashboard to review the case details and contact the client.</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="https://clns.in/dashboard/advocate" style="background: #10b981; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block;">
+                    View Case Dashboard
+                </a>
+            </div>
+            <p style="color: #64748b; font-size: 13px;">If you have any questions, please contact CLNS administration.</p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: advocateEmail,
+        subject,
+        html,
+        text: `Dear ${advocateName}, CLNS has officially assigned a new consultation case to you from a client.`
+    });
+}
+
+export async function sendCaseReassignedEmailToOriginalAdvocate(advocateEmail: string, advocateName: string) {
+    const subject = `Update on Consultation Request`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #64748b; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Consultation Request Update</h2>
+            <p>Dear ${advocateName},</p>
+            <p>This is an update regarding a recent consultation request from a client.</p>
+            <p>The CLNS administration has reassigned this case to another advocate based on availability and client needs. You no longer need to take any action regarding this request.</p>
+            <p style="color: #64748b; font-size: 13px; margin-top: 25px;">If you have any questions, please contact CLNS administration.</p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: advocateEmail,
+        subject,
+        html,
+        text: `Dear ${advocateName}, a recent consultation request has been reassigned to another advocate by CLNS administration.`
+    });
+}
+
+export async function sendCaseCancelledEmail(clientEmail: string, clientName: string) {
+    const subject = `Update on Consultation Request`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #ef4444; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Consultation Cancelled</h2>
+            <p>Dear ${clientName},</p>
+            <p>We regret to inform you that your recent consultation request has been cancelled by the CLNS administration.</p>
+            <p>If you believe this was done in error or if you have any questions, please reach out to us.</p>
+            <p style="color: #64748b; font-size: 13px; margin-top: 25px;">
+                Contact us at <a href="mailto:get.clns@gmail.com">get.clns@gmail.com</a>.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: clientEmail,
+        subject,
+        html,
+        text: `Dear ${clientName}, your recent consultation request has been cancelled by CLNS administration.`
+    });
+}
+
+export async function sendCaseAssignedToExternalEmail(advocateEmail: string, clientName: string) {
+    const subject = `Consultation Request from CLNS`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #10b981; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">New Consultation Request</h2>
+            <p>Dear Advocate,</p>
+            <p>A client has requested your consultation. Please approach CLNS to review the details and proceed with the case.</p>
+            <p style="color: #64748b; font-size: 13px; margin-top: 25px;">
+                Contact us at <a href="mailto:get.clns@gmail.com">get.clns@gmail.com</a>.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: advocateEmail,
+        subject,
+        html,
+        text: `A client has requested your consultation. Please approach CLNS.`
+    });
+}
+
+export async function sendCaseReassignedGentleEmailToAdvocate(advocateEmail: string, advocateName: string) {
+    const subject = `Update: Consultation Request`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fafafa;">
+            <h2 style="color: #64748b; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Consultation Update</h2>
+            <p>Dear ${advocateName},</p>
+            <p>Thank you for your time. The consultation request has been taken by someone else.</p>
+            <p>No further action is required from you regarding this specific case.</p>
+            <p style="color: #64748b; font-size: 13px; margin-top: 25px;">
+                If you have any questions, please contact CLNS administration.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: advocateEmail,
+        subject,
+        html,
+        text: `Dear ${advocateName}, the consultation request has been taken by someone else. No further action is required.`
     });
 }

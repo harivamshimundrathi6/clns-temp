@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode, sendPasswordResetEmail } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 export const firebaseConfig = {
@@ -18,4 +18,4 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-export { app, db, auth, storage, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode };
+export { app, db, auth, storage, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode, sendPasswordResetEmail };

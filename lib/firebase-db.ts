@@ -12,7 +12,8 @@ import {
   limit,
   DocumentData,
   Query,
-  setDoc
+  setDoc,
+  documentId
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -203,7 +204,11 @@ export const caseOperations = {
     if (options?.where) {
       Object.entries(options.where).forEach(([key, value]) => {
         if (value !== undefined) {
-          q = query(q, where(key, "==", value));
+          if (key === "id") {
+            q = query(q, where(documentId(), "==", value));
+          } else {
+            q = query(q, where(key, "==", value));
+          }
         }
       });
     }
@@ -611,6 +616,24 @@ export const mentorshipOperations = {
     const snapshot = await getDocs(q);
     return snapshot.size;
   },
+  async findFirst(options: { where?: any }): Promise<Mentorship | null> {
+    let q: Query<DocumentData> = collection(db, "mentorships");
+    if (options.where) {
+      Object.entries(options.where).forEach(([key, value]) => {
+        if (value !== undefined && key !== "mentorship") {
+          // Handle { in: [...] } if needed, otherwise fallback to basic equality if value is not object
+          if (typeof value === 'object' && value !== null && 'in' in value) {
+            q = query(q, where(key, "in", value.in));
+          } else {
+            q = query(q, where(key, "==", value));
+          }
+        }
+      });
+    }
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Mentorship;
+  },
 
   async findMany(options: { where?: any; orderBy?: any; include?: any; select?: any; take?: number } = {}): Promise<Mentorship[]> {
     let q: Query<DocumentData> = collection(db, "mentorships");
@@ -680,6 +703,19 @@ export const mentorshipOperations = {
       updatedAt: new Date().toISOString()
     });
     return { id: docRef.id, ...data };
+  },
+
+  async update(id: string, data: Partial<Mentorship>): Promise<Mentorship> {
+    const docRef = doc(db, "mentorships", id);
+    const updateData = {
+      ...data,
+      updatedAt: new Date().toISOString()
+    };
+    await updateDoc(docRef, updateData);
+    
+    // Fetch and return the updated document
+    const updatedDoc = await getDoc(docRef);
+    return { id: updatedDoc.id, ...updatedDoc.data() } as Mentorship;
   }
 };
 

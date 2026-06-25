@@ -327,17 +327,35 @@ export async function fetchAdvocateHearings() {
                 }
             },
             include: {
-                case: {
-                    select: {
-                        title: true,
-                        client: {
-                            select: { name: true }
-                        }
-                    }
-                }
+                case: true
             }
         });
-        return hearings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        // Manually fetch the client for each case, as firebase-db mock doesn't do deep includes
+        for (const hearing of hearings) {
+            if (hearing.case && hearing.case.clientId) {
+                const clientDoc = await db.user.findUnique({ where: { id: hearing.case.clientId } });
+                if (clientDoc) {
+                    hearing.case.client = { name: clientDoc.name };
+                }
+            }
+        }
+
+        // Convert all dates to standard ISO strings to avoid client-side serialization issues with Firebase Timestamps
+        const normalizedHearings = hearings.map(hearing => {
+            let normalizedDate = hearing.date;
+            if (hearing.date && typeof hearing.date === 'object') {
+                if ('seconds' in hearing.date) normalizedDate = new Date(hearing.date.seconds * 1000).toISOString();
+                else if ('_seconds' in hearing.date) normalizedDate = new Date(hearing.date._seconds * 1000).toISOString();
+            }
+            // Ensure it's a string or valid Date for the client
+            if (normalizedDate instanceof Date) {
+                normalizedDate = normalizedDate.toISOString();
+            }
+            return { ...hearing, date: normalizedDate };
+        });
+
+        return normalizedHearings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     } catch (error) {
         console.error("Failed to fetch advocate hearings:", error);
         return [];

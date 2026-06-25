@@ -122,13 +122,13 @@ export default function ManageAffiliationsPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full text-left">
+        <table className="w-full text-left table-fixed">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-4 font-medium text-gray-500">Partner</th>
-              <th className="px-6 py-4 font-medium text-gray-500">Website</th>
-              <th className="px-6 py-4 font-medium text-gray-500">Added</th>
-              <th className="px-6 py-4 font-medium text-gray-500 text-right">Actions</th>
+              <th className="px-6 py-4 font-medium text-gray-500 w-5/12">Partner</th>
+              <th className="px-6 py-4 font-medium text-gray-500 w-3/12">Website</th>
+              <th className="px-6 py-4 font-medium text-gray-500 w-2/12">Added</th>
+              <th className="px-6 py-4 font-medium text-gray-500 text-right w-2/12">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -139,20 +139,20 @@ export default function ManageAffiliationsPage() {
             ) : (
               affiliations.map(aff => (
                 <tr key={aff.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 overflow-hidden">
                     <div className="flex items-center gap-4">
-                      {aff.logoUrl && <img src={aff.logoUrl} alt={aff.name} className="w-10 h-10 object-contain rounded bg-white border" />}
-                      <div>
-                        <div className="font-medium text-gray-900 flex items-center gap-2">
-                          {aff.name}
-                          {aff.isFeatured && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Featured</span>}
+                      {aff.logoUrl && <img src={aff.logoUrl} alt={aff.name} className="w-10 h-10 object-contain rounded bg-white border shrink-0" />}
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-gray-900 flex items-center gap-2 truncate">
+                          <span className="truncate">{aff.name}</span>
+                          {aff.isFeatured && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0">Featured</span>}
                         </div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">{aff.description}</div>
+                        <div className="text-sm text-gray-500 truncate">{aff.description}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <a href={aff.websiteLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline text-sm truncate max-w-[150px] inline-block">{aff.websiteLink}</a>
+                  <td className="px-6 py-4 overflow-hidden">
+                    <a href={aff.websiteLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline text-sm truncate block">{aff.websiteLink}</a>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(aff.createdAt || Date.now()).toLocaleDateString()}
