@@ -5,11 +5,10 @@ import { motion } from "framer-motion";
 import { Search, Filter, Scale, BadgeCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookingDialog } from "./booking-dialog";
 import { allStaticAdvocates } from "@/lib/advocates-data";
+
+const CALENDLY_URL = "https://calendly.com/get-clns/30min";
 
 interface Advocate {
     id: string;
@@ -31,9 +30,6 @@ interface FindLawyerContentProps {
 export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) {
     const [selectedFilter, setSelectedFilter] = useState("All");
     const [searchTerm, setSearchTerm] = useState("");
-    const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
-    const [selectedAdvocate, setSelectedAdvocate] = useState<{ id: string; name: string } | null>(null);
-    const router = useRouter();
 
     // Merge database advocates with static advocates from the public page
     const allAdvocates = useMemo(() => {
@@ -83,15 +79,8 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
         return filtered;
     }, [allAdvocates, searchTerm, selectedFilter]);
 
-    const handleBookNow = (advocateId: string, advocateName: string) => {
-        setSelectedAdvocate({ id: advocateId, name: advocateName });
-        setBookingDialogOpen(true);
-    };
-
-    const handleChat = (advocateEmail: string, advocateName: string) => {
-        // Open email client for now, or navigate to messages
-        window.location.href = `mailto:${advocateEmail}?subject=Consultation Request`;
-        toast.success(`Opening email client to contact ${advocateName}`);
+    const handleConsult = () => {
+        window.open(CALENDLY_URL, "_blank", "noopener,noreferrer");
     };
 
     const getInitials = (name: string) => {
@@ -198,7 +187,7 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
 
                             <div className="flex flex-row sm:flex-col justify-between sm:justify-center gap-2 border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-4 min-w-[120px]">
                                 <Button
-                                    onClick={() => handleBookNow(advocate.id, advocate.name)}
+                                    onClick={handleConsult}
                                     className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9"
                                 >
                                     Consult
@@ -216,15 +205,7 @@ export function FindLawyerContent({ initialAdvocates }: FindLawyerContentProps) 
                 </div>
             )}
 
-            {/* Booking Dialog */}
-            {selectedAdvocate && (
-                <BookingDialog
-                    advocateId={selectedAdvocate.id}
-                    advocateName={selectedAdvocate.name}
-                    open={bookingDialogOpen}
-                    onOpenChange={setBookingDialogOpen}
-                />
-            )}
+
         </div>
     );
 }
